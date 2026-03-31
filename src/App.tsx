@@ -4,6 +4,7 @@ import "./App.css";
 import Projects from "./pages/Projects.tsx";
 import {TimeService} from "./services/times.service"
 import {Time} from "@/utils/interfaces.tsx";
+import AddProjectButton from "@/contexts/AddProjectButton.tsx";
 
 function App() {
     const [times, setTimes] = useState<Time[]>([])
@@ -67,6 +68,7 @@ function App() {
   return (
     <main className="container">
       <h1>Welcome to Tauri + React</h1>
+        <AddProjectButton />
         <Projects times={times} />
     </main>
   );
