@@ -5,5 +5,6 @@ export interface Time {
     running: number
     current_time: number
     total_time: number
-    order_index: number
+    order_index: number,
+    active: number
 }

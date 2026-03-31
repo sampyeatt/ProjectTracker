@@ -14,7 +14,8 @@ pub fn run() {
             total_time INTEGER,
             current_time INTEGER,
             running INTEGER NOT NULL DEFAULT 0,
-            order_index INTEGER UNIQUE NOT NULL
+            order_index INTEGER UNIQUE NOT NULL,
+            active INTEGER NOT NULL DEFAULT 1
             )",
             kind: MigrationKind::Up,
         },

@@ -17,7 +17,7 @@ export class TimeService {
      * Initialize database connection
      */
     private async initDB () {
-        this.db = await Database.load('sqlite:timetracker-v2.db')
+        this.db = await Database.load('sqlite:projecttracker-v2.db')
     }
 
     /**
