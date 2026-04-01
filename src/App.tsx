@@ -24,7 +24,12 @@ function App() {
     })
 
     const startTime = useCallback((data: Time) => {
-        console.log('start time', times)
+        // Stop all currently running times
+        times.forEach((value: Time) => {
+            if (value.running === 1) {
+                stopTime(value)
+            }
+        })
         const date = Date.now()
         timeService.startTime(data.id, 1, date).then((res) => {
             if (res) {
