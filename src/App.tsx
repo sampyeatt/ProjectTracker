@@ -14,9 +14,8 @@ function App() {
 
     function getTimes () {
         try {
-            const newMap = new Map(times)
+            const newMap = new Map()
             timeService.getAllTimes().then((timesFromDB) => {
-                console.log('times from db:', timesFromDB)
                 timesFromDB.forEach(time => {
                     newMap.set(time.key, time)
                 })
@@ -35,11 +34,12 @@ function App() {
         const date = Date.now()
         timeService.startTime(data.id, 1, date).then((res) => {
             if (res) {
-                const newData = data
+                const newData = {...data}
                 newData.running = 1
                 newData.current_time = date
-                console.log('times', newData)
-                setTimes(times.set(data.key, newData))
+                const temp = times.set(data.key, {...newData})
+                console.log('temp', temp)
+                setTimes(temp)
             }
         })
     }, [])
@@ -50,10 +50,9 @@ function App() {
         const updatedTime = data.total_time + (date - data.current_time)
         timeService.stopTime(updatedTime, data.id).then((res) => {
             if (res) {
-                const newData = data
+                const newData = {...data}
                 newData.running = 0
                 newData.total_time = updatedTime
-                console.log('times', newData)
                 setTimes(times.set(data.key, newData))
             }
         })
