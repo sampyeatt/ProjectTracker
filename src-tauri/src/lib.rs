@@ -12,7 +12,7 @@ pub fn run() {
             client_name TEXT NOT NULL,
             key TEXT UNIQUE NOT NULL,
             total_time INTEGER,
-            current_time INTEGER,
+            current_time INTEGER DEFAULT 0,
             running INTEGER NOT NULL DEFAULT 0,
             order_index INTEGER UNIQUE NOT NULL,
             active INTEGER NOT NULL DEFAULT 1
@@ -22,7 +22,7 @@ pub fn run() {
     ];
     tauri::Builder::default()
         .plugin(tauri_plugin_sql::Builder::default()
-            .add_migrations("sqlite:projecttracker-v2.db", migrations)
+            .add_migrations("sqlite:projecttracker.db", migrations)
             .build()
         )
         .plugin(tauri_plugin_opener::init())

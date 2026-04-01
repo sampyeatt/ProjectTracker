@@ -1,7 +1,7 @@
-import {createListCollection, Portal, Select} from '@chakra-ui/react'
+import {createListCollection, Select, Portal} from '@chakra-ui/react'
 import {availableKeys} from "@/utils/shared.tsx";
 
-function SelectAvailableKeys({times}: { times: Map<string, number> }) {
+function SelectAvailableKeys({times, onDataFromChild}: { times: Map<string, number>, onDataFromChild: (data: string) => void }) {
     const keyOptions: Array<{ label: string, value: number }> = []
     availableKeys.forEach((value, key) => {
         if (times.has(key)) return
@@ -16,7 +16,10 @@ function SelectAvailableKeys({times}: { times: Map<string, number> }) {
     })
 
     return (
-        <Select.Root collection={keyOptionCollection} variant='outline'>
+        <Select.Root
+            collection={keyOptionCollection}
+            variant='outline'
+            onValueChange={(e) => onDataFromChild(e.items[0].label)}>
             <Select.HiddenSelect/>
             <Select.Label>Select a key</Select.Label>
             <Select.Control>

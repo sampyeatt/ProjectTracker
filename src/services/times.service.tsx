@@ -17,7 +17,7 @@ export class TimeService {
      * Initialize database connection
      */
     private async initDB () {
-        this.db = await Database.load('sqlite:projecttracker-v2.db')
+        this.db = await Database.load('sqlite:projecttracker.db')
     }
 
     /**
@@ -56,17 +56,17 @@ export class TimeService {
 
     /**
      * Create a new time entry in the database
-     * @param userId - user id number
      * @param clientName - name of the client
      * @param key - key pressed to start the time entry
-     * @param keyCode code for key
+     * @param index index for time
      * @returns QueryResult - result of the insert operation
      */
-    async newTime (clientName: string, key: string, keyCode: number) {
+    async newTime (clientName: string, key: string, index: number) {
+        console.log('new time', this.db)
         if (this.db) {
             return await this.db.execute(
                 'INSERT INTO times (client_name, key, total_time, order_index) VALUES ($1, $2, $3, $4)',
-                [clientName, key, 0, keyCode]
+                [clientName, key, 0, index]
             )
         }
         return null
@@ -92,16 +92,15 @@ export class TimeService {
 
     /**
      * Stop a time entry for a given time id. This will set the current time to the current time and add the difference between the current time and the start time to the total time.
-     * @param userId - user id number
      * @param totalTime - total time spent on current project
      * @param timeId - time id number
      * @returns QueryResult - result of the update operation
      */
-    async stopTime (userId: number, totalTime: number = 0, timeId: number) {
+    async stopTime (totalTime: number = 0, timeId: number) {
         if (this.db) {
             return await this.db.execute(
-                `UPDATE times SET running = 0, total_time =  $1 WHERE userId = $2 AND id = $3`,
-                [totalTime, userId, timeId]
+                `UPDATE times SET running = 0, total_time =  $1 WHERE id = $2`,
+                [totalTime, timeId]
             )
         }
         return null
