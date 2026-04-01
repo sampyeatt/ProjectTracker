@@ -1,7 +1,5 @@
 import {Button} from '@chakra-ui/react'
 import {Time} from '@/utils/interfaces.tsx'
-// import {TimeService} from "@/services/times.service.tsx";
-
 
 function ProjectButton({project, onStartTime, onStopTime}: {project: Time, onStartTime: (data: Time) => void, onStopTime: (data: Time) => void}) {
     let varient: 'outline' | 'subtle' = 'outline'
@@ -14,9 +12,6 @@ function ProjectButton({project, onStartTime, onStopTime}: {project: Time, onSta
     }
 
     const handleClick = () => {
-        console.log('clicked')
-
-        // const timeService = new TimeService()
         if (!project.running) {
             onStartTime(project)
         } else if (project.running) {

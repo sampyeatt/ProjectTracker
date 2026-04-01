@@ -1,33 +1,27 @@
-import {useState, useEffect, useCallback, JSX} from 'react'
+import {useCallback, useState} from 'react'
 import './App.css'
 import {TimeService} from './services/times.service'
 import {Time} from '@/utils/interfaces.tsx'
 import AddProjectButton from '@/components/Buttons/AddProjectButton.tsx'
-// import Projects from "@/pages/Projects.tsx";
-import {availableKeys} from "@/utils/shared.tsx";
-import {Box, Button, SimpleGrid} from "@chakra-ui/react";
+import Projects from "@/pages/Projects.tsx";
 
 const timeService = new TimeService()
 
+function getTimes() {
+    const newMap = new Map<string, Time>()
+    return timeService.getAllTimes().then((timesFromDB) => {
+        timesFromDB.forEach(time => {
+            newMap.set(time.key, time)
+        })
+        return newMap
+    })
+}
+
 function App() {
     const [times, setTimes] = useState(new Map())
-
-    function getTimes () {
-        try {
-            const newMap = new Map()
-            timeService.getAllTimes().then((timesFromDB) => {
-                timesFromDB.forEach(time => {
-                    newMap.set(time.key, time)
-                })
-                setTimes(newMap)
-            })
-        } catch (error) {
-            console.error(error)
-        }
-    }
-    useEffect(() => {
-        getTimes()
-    }, [])
+    getTimes().then((res) => {
+        if (res) setTimes(res)
+    })
 
     const startTime = useCallback((data: Time) => {
         console.log('start time', times)
@@ -37,9 +31,7 @@ function App() {
                 const newData = {...data}
                 newData.running = 1
                 newData.current_time = date
-                const temp = times.set(data.key, {...newData})
-                console.log('temp', temp)
-                setTimes(temp)
+                setTimes(times.set(data.key, {...newData}))
             }
         })
     }, [])
@@ -58,58 +50,12 @@ function App() {
         })
     }, [])
 
-  return (
-    <main className='container'>
-        <AddProjectButton times={times}/>
-        <Projects times={times} onStartTime={startTime} onStopTime={stopTime}/>
-    </main>
-  );
-}
-
-function Projects({times, onStartTime, onStopTime}: { times: Map<string, Time>, onStartTime: (data: Time) => void, onStopTime: (data: Time) => void}) {
-
-    const projects: JSX.Element[] = []
-    availableKeys.forEach((value) => {
-        let displayTime = value
-        if (times.has(value.key)) displayTime = times.get(value.key)!
-        projects.push(
-            <Box key={displayTime.id}><ProjectButton project={displayTime} onStartTime={onStartTime} onStopTime={onStopTime}/></Box>
-        )
-
-
-    })
     return (
-        <div className='flex justify-center p-2'>
-            <SimpleGrid columns={4} gap={2}>
-                {projects}
-            </SimpleGrid>
-        </div>
-    )
-}
-
-function ProjectButton({project, onStartTime, onStopTime}: {project: Time, onStartTime: (data: Time) => void, onStopTime: (data: Time) => void}) {
-    let varient: 'outline' | 'subtle' = 'outline'
-    const dis = (project.active === 0)
-    if (project.running === 1) varient = 'subtle'
-    let buttonContent = <p>{project.key}</p>
-
-    if (project.active) {
-        buttonContent = <p>{project.client_name}<br/>{(project.total_time / (1000 * 60 * 60)).toFixed(2)} hours</p>
-    }
-
-    const handleClick = () => {
-        if (!project.running) {
-            onStartTime(project)
-        } else if (project.running) {
-            onStopTime(project)
-        }
-    }
-
-    return (
-        <Button asChild className='w-33! h-16.5!' disabled={dis} variant={varient} colorPalette={'purple'} onClick={handleClick}>
-            {buttonContent}
-        </Button>
-    )
+        <main className='container'>
+            <AddProjectButton times={times}/>
+            <Projects times={times} onStartTime={startTime} onStopTime={stopTime}/>
+        </main>
+    );
 }
 
 export default App;
