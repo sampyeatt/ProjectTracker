@@ -25,7 +25,9 @@
 
 .container {
   margin: 0;
-  padding-top: 10vh;
+  padding-top: 1vh;
+  padding-left: 1vh;
+  padding-right: 1vh;
   display: flex;
   flex-direction: column;
   justify-content: center;

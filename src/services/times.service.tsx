@@ -62,7 +62,6 @@ export class TimeService {
      * @returns QueryResult - result of the insert operation
      */
     async newTime (clientName: string, key: string, index: number) {
-        console.log('new time', this.db)
         if (this.db) {
             return await this.db.execute(
                 'INSERT INTO times (client_name, key, total_time, order_index) VALUES ($1, $2, $3, $4)',

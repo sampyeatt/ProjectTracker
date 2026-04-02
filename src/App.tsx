@@ -2,8 +2,10 @@ import {useCallback, useState} from 'react'
 import './App.css'
 import {TimeService} from './services/times.service'
 import {Time} from '@/utils/interfaces.tsx'
-import AddProjectButton from '@/components/Buttons/AddProjectButton.tsx'
 import Projects from "@/pages/Projects.tsx";
+import {CloseButton, Stack} from "@chakra-ui/react";
+import NavBar from "@/pages/NavBar.tsx";
+import {getCurrentWindow} from "@tauri-apps/api/window";
 
 const timeService = new TimeService()
 
@@ -42,7 +44,6 @@ function App() {
     }, [])
 
     const stopTime = useCallback((data: Time) => {
-        console.log('stop time', times)
         const date = Date.now()
         const updatedTime = data.total_time + (date - data.current_time)
         timeService.stopTime(updatedTime, data.id).then((res) => {
@@ -55,10 +56,35 @@ function App() {
         })
     }, [])
 
+    const updateTime = useCallback((data: Time) => {
+        console.log('Update time', data)
+        timeService.updateTime(data).then(() => {
+            setTimes(times.set(data.key, data))
+        })
+    }, [])
+
+    const deleteTime = useCallback((id: number, key: string) => {
+        timeService.deleteTime(id).then(() => {
+            times.delete(key)
+            setTimes(times)
+        })
+        console.log('delete time', key)
+    }, [])
+
+    const closeWindow = () => {
+        console.log(getCurrentWindow())
+        getCurrentWindow().close()
+    }
+
     return (
         <main className='container'>
-            <AddProjectButton times={times}/>
-            <Projects times={times} onStartTime={startTime} onStopTime={stopTime}/>
+            <div className='flex place-content-start'>
+                <CloseButton onClick={closeWindow} className={'w-13! h-13!'}/>
+            </div>
+            <Stack gap={'5'}>
+                <NavBar times={times} updateTimeCB={updateTime} deleteTimeCB={deleteTime}/>
+                <Projects times={times} onStartTime={startTime} onStopTime={stopTime}/>
+            </Stack>
         </main>
     );
 }

@@ -13,8 +13,6 @@ function Projects({times, onStartTime, onStopTime}: { times: Map<string, Time>, 
         projects.push(
             <Box key={displayTime.id}><ProjectButton project={displayTime} onStartTime={onStartTime} onStopTime={onStopTime}/></Box>
         )
-
-
     })
     return (
         <div className='flex justify-center p-2'>

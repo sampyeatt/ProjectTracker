@@ -4,34 +4,33 @@ import SelectAvailableKeys from "@/components/SelectAvailableKeys.tsx"
 import { useState, useCallback} from "react"
 import {availableKeys} from "@/utils/shared.tsx";
 import {TimeService} from "@/services/times.service";
+import {Time} from "@/utils/interfaces.tsx";
 
-function AddProjectButton({times}: { times: Map<string, number> }) {
+function AddProjectButton({times}: { times: Map<string, Time> }) {
     const [clientName, setClientName] = useState('')
     const [selectedKey, setSelectedKey] = useState('')
-    const [isSending, setIsSending] = useState(false);
-    const timeService = new TimeService()
 
     const getSelectedKeyFromChild = useCallback((data: string) => {
         setSelectedKey(data)
     }, [])
 
     const addNewTime = () => {
-        setIsSending(true)
-        console.log('cl', clientName)
-        console.log('k', selectedKey)
+        const timeService = new TimeService()
         const index = availableKeys.get(selectedKey)!.order_index
         timeService.newTime(clientName, selectedKey, index).then((res) => {
-            console.log('res', res)
             if (res) {
-                setIsSending(false)
+                setClientName('')
+                setSelectedKey('')
             } if (res === null) {
+                setClientName('')
+                setSelectedKey('')
                 alert('Error adding time')
             }
         })
     }
 
     return (
-        <div>
+        <div className='flex justify-center p-2'>
             <Dialog.Root>
                 <Dialog.Trigger asChild>
                     <Button className='w-33! h-12!'>
@@ -48,14 +47,16 @@ function AddProjectButton({times}: { times: Map<string, number> }) {
                                 <Dialog.Body>
                                     <Stack gap={3}>
                                         <Input placeholder={'Client Name'} value={clientName} onChange={e => setClientName(e.target.value)}></Input>
-                                        <SelectAvailableKeys times={times} onDataFromChild={getSelectedKeyFromChild}/>
+                                        <SelectAvailableKeys times={times} hideLabel={false} onDataFromChild={getSelectedKeyFromChild}/>
                                     </Stack>
                                 </Dialog.Body>
                                 <Dialog.Footer>
                                     <Dialog.ActionTrigger asChild>
                                         <Button variant='outline'>Cancel</Button>
                                     </Dialog.ActionTrigger>
-                                    <Button onClick={addNewTime} disabled={isSending}>Save</Button>
+                                    <Dialog.ActionTrigger asChild>
+                                        <Button onClick={addNewTime}>Save</Button>
+                                    </Dialog.ActionTrigger>
                                 </Dialog.Footer>
                                 <Dialog.CloseTrigger asChild>
                                     <CloseButton size='sm'/>
