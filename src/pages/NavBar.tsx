@@ -2,6 +2,7 @@ import AddProjectButton from "@/components/Buttons/AddProjectButton.tsx";
 import {Time} from "@/utils/interfaces.tsx";
 import {Stack} from "@chakra-ui/react";
 import EditProjectButton from "@/components/Buttons/EditProjectButton.tsx";
+import EndDayButton from "@/components/Buttons/EndDayButton.tsx";
 
 function NavBar({times, updateTimeCB, deleteTimeCB}: {
     times: Map<string, Time>,
@@ -13,6 +14,7 @@ function NavBar({times, updateTimeCB, deleteTimeCB}: {
             <Stack direction='row'>
                 <AddProjectButton times={times}/>
                 <EditProjectButton times={times} updateTimeCB={updateTimeCB} deleteTimeCB={deleteTimeCB}/>
+                <EndDayButton times={times}/>
             </Stack>
         </div>
     )

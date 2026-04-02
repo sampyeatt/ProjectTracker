@@ -1,6 +1,5 @@
 import {Button, CloseButton, Dialog, Portal} from '@chakra-ui/react'
 import {RiEditLine} from 'react-icons/ri'
-// import SelectAvailableKeys from "@/components/SelectAvailableKeys.tsx"
 import {JSX, useState} from "react"
 import {Time} from "@/utils/interfaces.tsx";
 import EditTable from "@/components/EditTable.tsx";
@@ -15,7 +14,6 @@ function EditProjectButton({times, updateTimeCB, deleteTimeCB}: {
     function handleOpenDialog() {
         setTable(<EditTable times={times} updateTimeCB={updateTimeCB} deleteTimeCB={deleteTimeCB}/>)
     }
-
 
     return (
         <div className='flex justify-center p-2'>
