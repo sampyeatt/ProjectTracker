@@ -56,6 +56,14 @@ function App() {
         })
     }, [])
 
+    const stopAllTimes = () => {
+        times.forEach((value: Time) => {
+            if (value.running === 1) {
+                stopTime(value)
+            }
+        })
+    }
+
     const updateTime = useCallback((data: Time) => {
         console.log('Update time', data)
         timeService.updateTime(data).then(() => {
@@ -82,7 +90,7 @@ function App() {
                 <CloseButton onClick={closeWindow} className={'w-13! h-13!'}/>
             </div>
             <Stack gap={'5'}>
-                <NavBar times={times} updateTimeCB={updateTime} deleteTimeCB={deleteTime}/>
+                <NavBar times={times} updateTimeCB={updateTime} deleteTimeCB={deleteTime} onStopTime={stopAllTimes}/>
                 <Projects times={times} onStartTime={startTime} onStopTime={stopTime}/>
             </Stack>
         </main>

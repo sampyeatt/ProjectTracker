@@ -3,12 +3,15 @@ import {Button, CloseButton, Dialog, Portal, Table} from "@chakra-ui/react";
 import {RiEditLine} from "react-icons/ri";
 import {JSX, useState} from "react";
 
-function EndDayButton({times}: { times: Map<string, Time> }) {
+function EndDayButton({times, onStopTime}: { times: Map<string, Time> ,
+    onStopTime: () => void}) {
     const [endTimesTable, setEndTimesTable] = useState<JSX.Element>()
 
     function handleOpenDialog() {
         const tableRow: Array<JSX.Element> = []
         let endDayTotal = 0
+        onStopTime()
+        //TODO calculate updated times for EOD
         times.forEach((time) => {
             if (time.total_time - 300000 > 0) {
                 const projectTime = +(Math.ceil(((time.total_time - 300000) / (1000 * 60 * 60)) * 2) / 2).toFixed(2)
@@ -20,7 +23,6 @@ function EndDayButton({times}: { times: Map<string, Time> }) {
                 )
                 endDayTotal += projectTime
             }
-
         })
 
         setEndTimesTable(
