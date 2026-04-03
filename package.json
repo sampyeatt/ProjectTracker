@@ -29,6 +29,11 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "typescript": "~6.0.2",
-    "vite": "^8.0.3"
+    "vite": "^8.0.3",
+    "eslint": "^9.39.4",
+    "@stylistic/eslint-plugin": "^5.10.0",
+    "eslint-config-love": "^151.0.0",
+    "eslint-plugin-jsdoc": "^62.9.0",
+    "typescript-eslint": "^8.58.0"
   }
 }
