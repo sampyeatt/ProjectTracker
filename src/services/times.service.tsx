@@ -37,21 +37,13 @@ export class TimeService {
     }
 
     /**
-     * Get time data for a given time id
-     * @param id - time id number
-     * @returns Time - time data
+     * Reset all times for a given user. This will set the running flag to 0, the current time to 0 and the total time to 0.
+     * @param userId - user id number
      */
-    async getTimeByTimeId (id: number) {
+    async resetAllTime () {
         if (this.db) {
-            const time = await this.db.select<Time[]>(
-                `SELECT *
-                 FROM times
-                 WHERE id = $1`,
-                [id]
-            )
-            return time[0]
+            await this.db.execute('UPDATE times SET running = 0, current_time = 0, total_time = 0')
         }
-        return null
     }
 
     /**

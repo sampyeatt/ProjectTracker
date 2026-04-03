@@ -3,10 +3,11 @@ import {Button, CloseButton, Dialog, Portal, Table} from "@chakra-ui/react";
 import {RiEditLine} from "react-icons/ri";
 import {JSX, useState} from "react";
 
-function EndDayButton({times, onStopTime, dialogSignal,}: {
+function EndDayButton({times, onStopTime, dialogSignal, endDay}: {
     times: Map<string, Time>,
-    onStopTime: () => void,
-    dialogSignal: (state: boolean) => void
+    onStopTime: () => Promise<Map<string, Time>>,
+    dialogSignal: (state: boolean) => void,
+    endDay: () => void
 }) {
     const [endTimesTable, setEndTimesTable] = useState<JSX.Element>()
 
@@ -14,40 +15,42 @@ function EndDayButton({times, onStopTime, dialogSignal,}: {
         dialogSignal(true)
         const tableRow: Array<JSX.Element> = []
         let endDayTotal = 0
-        onStopTime()
-        //TODO calculate updated times for EOD
-        times.forEach((time) => {
-            if (time.total_time - 300000 > 0) {
-                const projectTime = +(Math.ceil(((time.total_time - 300000) / (1000 * 60 * 60)) * 2) / 2).toFixed(2)
-                tableRow.push(
-                    <Table.Row>
-                        <Table.Cell>{time.client_name}</Table.Cell>
-                        <Table.Cell>{projectTime}</Table.Cell>
-                    </Table.Row>
-                )
-                endDayTotal += projectTime
-            }
+        onStopTime().then((t) => {
+            console.log('T', t)
+            times.forEach((time) => {
+                if (time.total_time - 300000 > 0) {
+                    const projectTime = +(Math.ceil(((time.total_time - 300000) / (1000 * 60 * 60)) * 2) / 2).toFixed(2)
+                    tableRow.push(
+                        <Table.Row>
+                            <Table.Cell>{time.client_name}</Table.Cell>
+                            <Table.Cell>{projectTime}</Table.Cell>
+                        </Table.Row>
+                    )
+                    endDayTotal += projectTime
+                }
+            })
+
+            setEndTimesTable(
+                <Table.Root variant={'outline'} size={'sm'}>
+                    <Table.Header>
+                        <Table.Row>
+                            <Table.ColumnHeader>Client</Table.ColumnHeader>
+                            <Table.ColumnHeader>Total Hours</Table.ColumnHeader>
+                        </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                        {tableRow}
+                    </Table.Body>
+                    <Table.Footer>
+                        <Table.Row>
+                            <Table.Cell fontWeight={'bold'}>TOTAL</Table.Cell>
+                            <Table.Cell fontWeight={'bold'}>{endDayTotal}</Table.Cell>
+                        </Table.Row>
+                    </Table.Footer>
+                </Table.Root>
+            )
         })
 
-        setEndTimesTable(
-            <Table.Root variant={'outline'} size={'sm'}>
-                <Table.Header>
-                    <Table.Row>
-                        <Table.ColumnHeader>Client</Table.ColumnHeader>
-                        <Table.ColumnHeader>Total Hours</Table.ColumnHeader>
-                    </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                    {tableRow}
-                </Table.Body>
-                <Table.Footer>
-                    <Table.Row>
-                        <Table.Cell fontWeight={'bold'}>TOTAL</Table.Cell>
-                        <Table.Cell fontWeight={'bold'}>{endDayTotal}</Table.Cell>
-                    </Table.Row>
-                </Table.Footer>
-            </Table.Root>
-        )
     }
 
     return (
@@ -70,14 +73,14 @@ function EndDayButton({times, onStopTime, dialogSignal,}: {
                                 </Dialog.Body>
                                 <Dialog.Footer>
                                     <Dialog.ActionTrigger asChild>
-                                        <Button variant='outline'>Cancel</Button>
+                                        <Button variant='outline' onClick={() => dialogSignal(false)}>Cancel</Button>
                                     </Dialog.ActionTrigger>
                                     <Dialog.ActionTrigger asChild>
-                                        <Button variant='outline'>Done</Button>
+                                        <Button variant='outline' onClick={endDay}>Done</Button>
                                     </Dialog.ActionTrigger>
                                 </Dialog.Footer>
                                 <Dialog.CloseTrigger asChild>
-                                    <CloseButton size='sm'/>
+                                    <CloseButton size='sm' onClick={() => dialogSignal(false)}/>
                                 </Dialog.CloseTrigger>
                             </Dialog.Content>
                         </Dialog.Positioner>

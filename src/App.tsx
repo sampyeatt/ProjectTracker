@@ -9,18 +9,17 @@ import {getCurrentWindow} from "@tauri-apps/api/window";
 
 const timeService = new TimeService()
 
-function getTimes() {
+async function getTimes() {
     const newMap = new Map<string, Time>()
-    return timeService.getAllTimes().then((timesFromDB) => {
-        timesFromDB.forEach(time => {
-            newMap.set(time.key, time)
-        })
-        return newMap
-    })
+    const timesFromDB = await timeService.getAllTimes();
+    timesFromDB.forEach(time => {
+        newMap.set(time.key, time);
+    });
+    return newMap;
 }
 
 function App() {
-    const [times, setTimes] = useState(new Map())
+    const [times, setTimes] = useState(new Map<string, Time>())
     const [dialogIsOpen, setDialogIsOpen] = useState(false)
     getTimes().then((res) => {
         if (res) setTimes(res)
@@ -57,16 +56,16 @@ function App() {
         })
     }, [])
 
-    const stopAllTimes = () => {
+    const stopAllTimes = async () => {
         times.forEach((value: Time) => {
             if (value.running === 1) {
                 stopTime(value)
             }
         })
+        return await getTimes()
     }
 
     const updateTime = useCallback((data: Time) => {
-        console.log('Update time', data)
         timeService.updateTime(data).then(() => {
             setTimes(times.set(data.key, data))
         })
@@ -77,7 +76,6 @@ function App() {
             times.delete(key)
             setTimes(times)
         })
-        console.log('delete time', key)
     }, [])
 
     const closeWindow = () => {
@@ -87,6 +85,22 @@ function App() {
 
     const dialogSignal = (state: boolean) => {
         setDialogIsOpen(state)
+    }
+
+    const endDay = async () => {
+        return await timeService.resetAllTime().then(() => {
+            times.forEach((value: Time) => {
+                times.set(value.key, {
+                    ...value,
+                    running: 0,
+                    total_time: 0,
+                    current_time: 0
+                })
+            })
+            setTimes(times)
+            dialogSignal(false)
+            return times
+        })
     }
 
     const handleKeyboardEvent = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -106,7 +120,7 @@ function App() {
             </div>
             <Stack gap={'5'}>
                 <NavBar times={times} updateTimeCB={updateTime} deleteTimeCB={deleteTime}
-                        onStopTime={stopAllTimes} dialogSignal={dialogSignal}/>
+                        onStopTime={stopAllTimes} dialogSignal={dialogSignal} endDay={endDay}/>
                 <Projects times={times} onStartTime={startTime} onStopTime={stopTime}/>
             </Stack>
         </main>
