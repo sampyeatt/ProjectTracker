@@ -1,12 +1,15 @@
 import {Button, CloseButton, Dialog, Input, Portal, Stack} from '@chakra-ui/react'
 import {RiAddLargeLine} from 'react-icons/ri'
 import SelectAvailableKeys from "@/components/SelectAvailableKeys.tsx"
-import { useState, useCallback} from "react"
+import {useCallback, useState} from "react"
 import {availableKeys} from "@/utils/shared.tsx";
 import {TimeService} from "@/services/times.service";
 import {Time} from "@/utils/interfaces.tsx";
 
-function AddProjectButton({times}: { times: Map<string, Time> }) {
+function AddProjectButton({times, dialogSignal}: {
+    times: Map<string, Time>,
+    dialogSignal: (state: boolean) => void
+}) {
     const [clientName, setClientName] = useState('')
     const [selectedKey, setSelectedKey] = useState('')
 
@@ -21,19 +24,21 @@ function AddProjectButton({times}: { times: Map<string, Time> }) {
             if (res) {
                 setClientName('')
                 setSelectedKey('')
-            } if (res === null) {
+            }
+            if (res === null) {
                 setClientName('')
                 setSelectedKey('')
                 alert('Error adding time')
             }
         })
+        dialogSignal(false)
     }
 
     return (
         <div className='flex justify-center p-2'>
             <Dialog.Root>
                 <Dialog.Trigger asChild>
-                    <Button className='w-33! h-12!'>
+                    <Button className='w-33! h-12!' onClick={() => dialogSignal(true)}>
                         <RiAddLargeLine/> Add Project
                     </Button>
                 </Dialog.Trigger>
@@ -46,20 +51,22 @@ function AddProjectButton({times}: { times: Map<string, Time> }) {
                                 </Dialog.Header>
                                 <Dialog.Body>
                                     <Stack gap={3}>
-                                        <Input placeholder={'Client Name'} value={clientName} onChange={e => setClientName(e.target.value)}></Input>
-                                        <SelectAvailableKeys times={times} hideLabel={false} onDataFromChild={getSelectedKeyFromChild}/>
+                                        <Input placeholder={'Client Name'} value={clientName}
+                                               onChange={e => setClientName(e.target.value)}></Input>
+                                        <SelectAvailableKeys times={times} hideLabel={false}
+                                                             onDataFromChild={getSelectedKeyFromChild}/>
                                     </Stack>
                                 </Dialog.Body>
                                 <Dialog.Footer>
                                     <Dialog.ActionTrigger asChild>
-                                        <Button variant='outline'>Cancel</Button>
+                                        <Button variant='outline' onClick={() => dialogSignal(false)}>Cancel</Button>
                                     </Dialog.ActionTrigger>
                                     <Dialog.ActionTrigger asChild>
                                         <Button onClick={addNewTime}>Save</Button>
                                     </Dialog.ActionTrigger>
                                 </Dialog.Footer>
                                 <Dialog.CloseTrigger asChild>
-                                    <CloseButton size='sm'/>
+                                    <CloseButton size='sm' onClick={() => dialogSignal(false)}/>
                                 </Dialog.CloseTrigger>
                             </Dialog.Content>
                         </Dialog.Positioner>

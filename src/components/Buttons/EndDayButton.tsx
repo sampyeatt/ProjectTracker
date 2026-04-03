@@ -3,11 +3,15 @@ import {Button, CloseButton, Dialog, Portal, Table} from "@chakra-ui/react";
 import {RiEditLine} from "react-icons/ri";
 import {JSX, useState} from "react";
 
-function EndDayButton({times, onStopTime}: { times: Map<string, Time> ,
-    onStopTime: () => void}) {
+function EndDayButton({times, onStopTime, dialogSignal,}: {
+    times: Map<string, Time>,
+    onStopTime: () => void,
+    dialogSignal: (state: boolean) => void
+}) {
     const [endTimesTable, setEndTimesTable] = useState<JSX.Element>()
 
     function handleOpenDialog() {
+        dialogSignal(true)
         const tableRow: Array<JSX.Element> = []
         let endDayTotal = 0
         onStopTime()
@@ -27,7 +31,7 @@ function EndDayButton({times, onStopTime}: { times: Map<string, Time> ,
 
         setEndTimesTable(
             <Table.Root variant={'outline'} size={'sm'}>
-                <Table.Header >
+                <Table.Header>
                     <Table.Row>
                         <Table.ColumnHeader>Client</Table.ColumnHeader>
                         <Table.ColumnHeader>Total Hours</Table.ColumnHeader>
@@ -36,7 +40,7 @@ function EndDayButton({times, onStopTime}: { times: Map<string, Time> ,
                 <Table.Body>
                     {tableRow}
                 </Table.Body>
-                <Table.Footer >
+                <Table.Footer>
                     <Table.Row>
                         <Table.Cell fontWeight={'bold'}>TOTAL</Table.Cell>
                         <Table.Cell fontWeight={'bold'}>{endDayTotal}</Table.Cell>

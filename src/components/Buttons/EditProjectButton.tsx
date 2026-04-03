@@ -4,14 +4,16 @@ import {JSX, useState} from "react"
 import {Time} from "@/utils/interfaces.tsx";
 import EditTable from "@/components/EditTable.tsx";
 
-function EditProjectButton({times, updateTimeCB, deleteTimeCB}: {
+function EditProjectButton({times, updateTimeCB, deleteTimeCB, dialogSignal}: {
     times: Map<string, Time>,
     updateTimeCB: (data: Time) => void,
-    deleteTimeCB: (id: number, key: string) => void
+    deleteTimeCB: (id: number, key: string) => void,
+    dialogSignal: (state: boolean) => void
 }) {
     const [table, setTable] = useState<JSX.Element>()
 
     function handleOpenDialog() {
+        dialogSignal(true)
         setTable(<EditTable times={times} updateTimeCB={updateTimeCB} deleteTimeCB={deleteTimeCB}/>)
     }
 
@@ -35,11 +37,11 @@ function EditProjectButton({times, updateTimeCB, deleteTimeCB}: {
                                 </Dialog.Body>
                                 <Dialog.Footer>
                                     <Dialog.ActionTrigger asChild>
-                                        <Button variant='outline'>Done</Button>
+                                        <Button variant='outline' onClick={() => dialogSignal(false)}>Done</Button>
                                     </Dialog.ActionTrigger>
                                 </Dialog.Footer>
                                 <Dialog.CloseTrigger asChild>
-                                    <CloseButton size='sm'/>
+                                    <CloseButton size='sm' onClick={() => dialogSignal(false)}/>
                                 </Dialog.CloseTrigger>
                             </Dialog.Content>
                         </Dialog.Positioner>

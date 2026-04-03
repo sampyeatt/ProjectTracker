@@ -1,4 +1,4 @@
-import {useCallback, useState} from 'react'
+import React, {useCallback, useState} from 'react'
 import './App.css'
 import {TimeService} from './services/times.service'
 import {Time} from '@/utils/interfaces.tsx'
@@ -21,6 +21,7 @@ function getTimes() {
 
 function App() {
     const [times, setTimes] = useState(new Map())
+    const [dialogIsOpen, setDialogIsOpen] = useState(false)
     getTimes().then((res) => {
         if (res) setTimes(res)
     })
@@ -84,13 +85,28 @@ function App() {
         getCurrentWindow().close()
     }
 
+    const dialogSignal = (state: boolean) => {
+        setDialogIsOpen(state)
+    }
+
+    const handleKeyboardEvent = (event: React.KeyboardEvent<HTMLDivElement>) => {
+        if (dialogIsOpen) return
+        if (times.has(event.code)) {
+            const time = times.get(event.code)
+            if (!time) return
+            if (time.running === 1) stopTime(time)
+            else startTime(time)
+        }
+    }
+
     return (
-        <main className='container'>
+        <main className='container' onKeyDown={handleKeyboardEvent} tabIndex={0}>
             <div className='flex place-content-start'>
                 <CloseButton onClick={closeWindow} className={'w-13! h-13!'}/>
             </div>
             <Stack gap={'5'}>
-                <NavBar times={times} updateTimeCB={updateTime} deleteTimeCB={deleteTime} onStopTime={stopAllTimes}/>
+                <NavBar times={times} updateTimeCB={updateTime} deleteTimeCB={deleteTime}
+                        onStopTime={stopAllTimes} dialogSignal={dialogSignal}/>
                 <Projects times={times} onStartTime={startTime} onStopTime={stopTime}/>
             </Stack>
         </main>
