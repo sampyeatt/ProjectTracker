@@ -1,9 +1,9 @@
-import {Time} from "@/utils/interfaces.tsx";
-import {Button, CloseButton, Dialog, Portal, Table} from "@chakra-ui/react";
-import {RiEditLine} from "react-icons/ri";
-import {JSX, useState} from "react";
+import {Time} from '@/utils/interfaces.tsx'
+import {Button, CloseButton, Dialog, Portal, Table} from '@chakra-ui/react'
+import {RiEditLine} from 'react-icons/ri'
+import {JSX, useState} from 'react'
 
-function EndDayButton({times, onStopTime, dialogSignal, endDay}: {
+function EndDayButton ({times, onStopTime, dialogSignal, endDay}: {
     times: Map<string, Time>,
     onStopTime: () => Promise<Map<string, Time>>,
     dialogSignal: (state: boolean) => void,
@@ -11,7 +11,7 @@ function EndDayButton({times, onStopTime, dialogSignal, endDay}: {
 }) {
     const [endTimesTable, setEndTimesTable] = useState<JSX.Element>()
 
-    function handleOpenDialog() {
+    function handleOpenDialog () {
         dialogSignal(true)
         const tableRow: Array<JSX.Element> = []
         let endDayTotal = 0
@@ -50,7 +50,6 @@ function EndDayButton({times, onStopTime, dialogSignal, endDay}: {
                 </Table.Root>
             )
         })
-
     }
 
     return (

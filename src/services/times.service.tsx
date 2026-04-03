@@ -1,8 +1,6 @@
 import Database from '@tauri-apps/plugin-sql'
 import { Time } from '../utils/interfaces.tsx'
 
-
-
 export class TimeService {
     private db: Database | null = null
 
@@ -90,7 +88,7 @@ export class TimeService {
     async stopTime (totalTime: number = 0, timeId: number) {
         if (this.db) {
             return await this.db.execute(
-                `UPDATE times SET running = 0, total_time =  $1 WHERE id = $2`,
+                'UPDATE times SET running = 0, total_time =  $1 WHERE id = $2',
                 [totalTime, timeId]
             )
         }
@@ -115,7 +113,7 @@ export class TimeService {
      */
     async updateTime (time: Time) {
         if (this.db) {
-            await this.db.execute(`UPDATE times SET client_name = $1, key = $2, order_index = $3 WHERE id = $4`, [time.client_name, time.key, time.order_index, time.id])
+            await this.db.execute('UPDATE times SET client_name = $1, key = $2, order_index = $3 WHERE id = $4', [time.client_name, time.key, time.order_index, time.id])
         }
     }
 }

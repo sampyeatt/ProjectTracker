@@ -2,23 +2,23 @@ import React, {useCallback, useState} from 'react'
 import './App.css'
 import {TimeService} from './services/times.service'
 import {Time} from '@/utils/interfaces.tsx'
-import Projects from "@/pages/Projects.tsx";
-import {CloseButton, Stack} from "@chakra-ui/react";
-import NavBar from "@/pages/NavBar.tsx";
-import {getCurrentWindow} from "@tauri-apps/api/window";
+import Projects from '@/pages/Projects.tsx'
+import {CloseButton, Stack} from '@chakra-ui/react'
+import NavBar from '@/pages/NavBar.tsx'
+import {getCurrentWindow} from '@tauri-apps/api/window'
 
 const timeService = new TimeService()
 
-async function getTimes() {
+async function getTimes () {
     const newMap = new Map<string, Time>()
-    const timesFromDB = await timeService.getAllTimes();
-    timesFromDB.forEach(time => {
-        newMap.set(time.key, time);
-    });
-    return newMap;
+    const timesFromDB = await timeService.getAllTimes()
+    timesFromDB.forEach((time) => {
+        newMap.set(time.key, time)
+    })
+    return newMap
 }
 
-function App() {
+function App () {
     const [times, setTimes] = useState(new Map<string, Time>())
     const [dialogIsOpen, setDialogIsOpen] = useState(false)
     getTimes().then((res) => {
@@ -120,11 +120,11 @@ function App() {
             </div>
             <Stack gap={'5'}>
                 <NavBar times={times} updateTimeCB={updateTime} deleteTimeCB={deleteTime}
-                        onStopTime={stopAllTimes} dialogSignal={dialogSignal} endDay={endDay}/>
+                    onStopTime={stopAllTimes} dialogSignal={dialogSignal} endDay={endDay}/>
                 <Projects times={times} onStartTime={startTime} onStopTime={stopTime}/>
             </Stack>
         </main>
-    );
+    )
 }
 
-export default App;
+export default App

@@ -1,10 +1,10 @@
 import {Button, CloseButton, Dialog, Portal} from '@chakra-ui/react'
 import {RiEditLine} from 'react-icons/ri'
-import {JSX, useState} from "react"
-import {Time} from "@/utils/interfaces.tsx";
-import EditTable from "@/components/EditTable.tsx";
+import {JSX, useState} from 'react'
+import {Time} from '@/utils/interfaces.tsx'
+import EditTable from '@/components/EditTable.tsx'
 
-function EditProjectButton({times, updateTimeCB, deleteTimeCB, dialogSignal}: {
+function EditProjectButton ({times, updateTimeCB, deleteTimeCB, dialogSignal}: {
     times: Map<string, Time>,
     updateTimeCB: (data: Time) => void,
     deleteTimeCB: (id: number, key: string) => void,
@@ -12,7 +12,7 @@ function EditProjectButton({times, updateTimeCB, deleteTimeCB, dialogSignal}: {
 }) {
     const [table, setTable] = useState<JSX.Element>()
 
-    function handleOpenDialog() {
+    function handleOpenDialog () {
         dialogSignal(true)
         setTable(<EditTable times={times} updateTimeCB={updateTimeCB} deleteTimeCB={deleteTimeCB}/>)
     }

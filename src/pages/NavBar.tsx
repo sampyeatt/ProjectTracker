@@ -1,10 +1,10 @@
-import AddProjectButton from "@/components/Buttons/AddProjectButton.tsx";
-import {Time} from "@/utils/interfaces.tsx";
-import {Stack} from "@chakra-ui/react";
-import EditProjectButton from "@/components/Buttons/EditProjectButton.tsx";
-import EndDayButton from "@/components/Buttons/EndDayButton.tsx";
+import AddProjectButton from '@/components/Buttons/AddProjectButton.tsx'
+import {Time} from '@/utils/interfaces.tsx'
+import {Stack} from '@chakra-ui/react'
+import EditProjectButton from '@/components/Buttons/EditProjectButton.tsx'
+import EndDayButton from '@/components/Buttons/EndDayButton.tsx'
 
-function NavBar({times, updateTimeCB, deleteTimeCB, onStopTime, dialogSignal, endDay}: {
+function NavBar ({times, updateTimeCB, deleteTimeCB, onStopTime, dialogSignal, endDay}: {
     times: Map<string, Time>,
     updateTimeCB: (data: Time) => void,
     deleteTimeCB: (id: number, key: string) => void,

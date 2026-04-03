@@ -1,7 +1,7 @@
 import {Button} from '@chakra-ui/react'
 import {Time} from '@/utils/interfaces.tsx'
 
-function ProjectButton({project, onStartTime, onStopTime}: {
+function ProjectButton ({project, onStartTime, onStopTime}: {
     project: Time,
     onStartTime: (data: Time) => void,
     onStopTime: (data: Time) => void
@@ -25,7 +25,7 @@ function ProjectButton({project, onStartTime, onStopTime}: {
 
     return (
         <Button asChild className='w-33! h-16.5!' disabled={dis} variant={varient} colorPalette={'purple'}
-                onClick={handleClick} onKeyDown={(e) => console.log(e)}>
+            onClick={handleClick} onKeyDown={(e) => console.log(e)}>
             {buttonContent}
         </Button>
     )

@@ -1,4 +1,4 @@
-import {Time} from "@/utils/interfaces.tsx";
+import {Time} from '@/utils/interfaces.tsx'
 
 export const availableKeys = new Map<string, Time>([
     ['F9', {

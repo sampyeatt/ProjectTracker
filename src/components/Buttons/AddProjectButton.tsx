@@ -1,12 +1,12 @@
 import {Button, CloseButton, Dialog, Input, Portal, Stack} from '@chakra-ui/react'
 import {RiAddLargeLine} from 'react-icons/ri'
-import SelectAvailableKeys from "@/components/SelectAvailableKeys.tsx"
-import {useCallback, useState} from "react"
-import {availableKeys} from "@/utils/shared.tsx";
-import {TimeService} from "@/services/times.service";
-import {Time} from "@/utils/interfaces.tsx";
+import SelectAvailableKeys from '@/components/SelectAvailableKeys.tsx'
+import {useCallback, useState} from 'react'
+import {availableKeys} from '@/utils/shared.tsx'
+import {TimeService} from '@/services/times.service'
+import {Time} from '@/utils/interfaces.tsx'
 
-function AddProjectButton({times, dialogSignal}: {
+function AddProjectButton ({times, dialogSignal}: {
     times: Map<string, Time>,
     dialogSignal: (state: boolean) => void
 }) {
@@ -52,9 +52,9 @@ function AddProjectButton({times, dialogSignal}: {
                                 <Dialog.Body>
                                     <Stack gap={3}>
                                         <Input placeholder={'Client Name'} value={clientName}
-                                               onChange={e => setClientName(e.target.value)}></Input>
+                                            onChange={(e) => setClientName(e.target.value)}></Input>
                                         <SelectAvailableKeys times={times} hideLabel={false}
-                                                             onDataFromChild={getSelectedKeyFromChild}/>
+                                            onDataFromChild={getSelectedKeyFromChild}/>
                                     </Stack>
                                 </Dialog.Body>
                                 <Dialog.Footer>

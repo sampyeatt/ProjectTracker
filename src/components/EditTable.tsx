@@ -1,11 +1,11 @@
-import {Time} from "@/utils/interfaces.tsx";
-import {IconButton, Input, Stack, Table} from "@chakra-ui/react";
-import {JSX, useCallback, useState} from "react";
-import {RiDeleteBinLine, RiEditLine, RiSave3Line} from "react-icons/ri";
-import {FcCancel} from "react-icons/fc";
-import SelectAvailableKeys from "@/components/SelectAvailableKeys.tsx";
+import {Time} from '@/utils/interfaces.tsx'
+import {IconButton, Input, Stack, Table} from '@chakra-ui/react'
+import {JSX, useCallback, useState} from 'react'
+import {RiDeleteBinLine, RiEditLine, RiSave3Line} from 'react-icons/ri'
+import {FcCancel} from 'react-icons/fc'
+import SelectAvailableKeys from '@/components/SelectAvailableKeys.tsx'
 
-function EditTable({times, updateTimeCB, deleteTimeCB}: {
+function EditTable ({times, updateTimeCB, deleteTimeCB}: {
     times: Map<string, Time>,
     updateTimeCB: (data: Time) => void,
     deleteTimeCB: (id: number, key: string) => void
@@ -57,14 +57,14 @@ function EditTable({times, updateTimeCB, deleteTimeCB}: {
                     <Table.Cell className={'w-35!'}>{time.client_name}</Table.Cell>
                     <Table.Cell className={'w-35!'}>{time.key}</Table.Cell>
                     <Table.Cell><IconButton onClick={() => editLine(time.key)}
-                                            disabled={editKey != ''}><RiEditLine/></IconButton></Table.Cell>
+                        disabled={editKey != ''}><RiEditLine/></IconButton></Table.Cell>
                 </Table.Row>
             )
         } else if (editKey === time.key) {
             projects.push(
                 <Table.Row key={time.key}>
                     <Table.Cell className={'w-35!'}><Input value={newClientName} placeholder={time.client_name}
-                                       onChange={(e) => setNewClientName(e.target.value)}/></Table.Cell>
+                        onChange={(e) => setNewClientName(e.target.value)}/></Table.Cell>
                     <Table.Cell className={'w-35!'}> <SelectAvailableKeys times={times} hideLabel={true} onDataFromChild={getSelectedKeyFromChild}/>
                     </Table.Cell>
                     <Table.Cell>
@@ -80,7 +80,6 @@ function EditTable({times, updateTimeCB, deleteTimeCB}: {
             )
         }
     })
-
 
     return (
         <Table.Root>

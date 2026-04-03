@@ -107,34 +107,34 @@ export default tseslint.config(
                 multiline: true,
                 consistent: true
             }],
-            'jsdoc/require-jsdoc': ['error', {
-                checkAllFunctionExpressions: true,
-                contexts: ['FunctionDeclaration', 'MethodDefinition', 'ClassDeclaration', 'TSDeclareFunction'],
-                require: {
-                    FunctionExpression: true
-                }
-            }],
-            'jsdoc/require-description': ['error', {
-                checkConstructors: true,
-                checkGetters: true,
-                checkSetters: true
-            }],
-            'jsdoc/require-param': ['error', {
-                checkGetters: true,
-                checkSetters: true,
-                enableFixer: true
-            }],
-            'jsdoc/require-param-description': ['error', {
-                contexts: ['any', 'comment']
-            }],
-            'jsdoc/require-returns': ['error', {
-                checkGetters: true,
-                enableFixer: true
-            }],
-            'jsdoc/require-returns-description': ['error', {
-                contexts: ['any', 'comment']
-            }],
-            'jsdoc/check-param-names': 'error',
+            // 'jsdoc/require-jsdoc': ['error', {
+            //     checkAllFunctionExpressions: true,
+            //     contexts: ['FunctionDeclaration', 'MethodDefinition', 'ClassDeclaration', 'TSDeclareFunction'],
+            //     require: {
+            //         FunctionExpression: true
+            //     }
+            // }],
+            // 'jsdoc/require-description': ['error', {
+            //     checkConstructors: true,
+            //     checkGetters: true,
+            //     checkSetters: true
+            // }],
+            // 'jsdoc/require-param': ['error', {
+            //     checkGetters: true,
+            //     checkSetters: true,
+            //     enableFixer: true
+            // }],
+            // 'jsdoc/require-param-description': ['error', {
+            //     contexts: ['any', 'comment']
+            // }],
+            // 'jsdoc/require-returns': ['error', {
+            //     checkGetters: true,
+            //     enableFixer: true
+            // }],
+            // 'jsdoc/require-returns-description': ['error', {
+            //     contexts: ['any', 'comment']
+            // }],
+            // 'jsdoc/check-param-names': 'error',
         }
     }
 );

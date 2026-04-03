@@ -1,11 +1,10 @@
 import {SimpleGrid, Box} from '@chakra-ui/react'
 import ProjectButton from '../components/Buttons/ProjectButton.tsx'
-import {JSX} from 'react';
-import {Time} from '@/utils/interfaces.tsx';
-import {availableKeys} from "@/utils/shared.tsx";
+import {JSX} from 'react'
+import {Time} from '@/utils/interfaces.tsx'
+import {availableKeys} from '@/utils/shared.tsx'
 
-function Projects({times, onStartTime, onStopTime}: { times: Map<string, Time>, onStartTime: (data: Time) => void, onStopTime: (data: Time) => void}) {
-
+function Projects ({times, onStartTime, onStopTime}: { times: Map<string, Time>, onStartTime: (data: Time) => void, onStopTime: (data: Time) => void}) {
     const projects: JSX.Element[] = []
     availableKeys.forEach((value) => {
         let displayTime = value

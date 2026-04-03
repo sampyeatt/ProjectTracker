@@ -1,9 +1,9 @@
 import {createListCollection, Select, Portal} from '@chakra-ui/react'
-import {availableKeys} from "@/utils/shared.tsx";
-import {Time} from "@/utils/interfaces.tsx";
-import {JSX, useState} from "react";
+import {availableKeys} from '@/utils/shared.tsx'
+import {Time} from '@/utils/interfaces.tsx'
+import {JSX, useState} from 'react'
 
-function SelectAvailableKeys({times, hideLabel, onDataFromChild}: { times: Map<string, Time>, hideLabel: boolean, onDataFromChild: (data: string) => void }) {
+function SelectAvailableKeys ({times, hideLabel, onDataFromChild}: { times: Map<string, Time>, hideLabel: boolean, onDataFromChild: (data: string) => void }) {
     const keyOptions: Array<{ label: string, value: number }> = []
     const [renderKeyOptions, setKeyOptions] = useState<JSX.Element>()
     availableKeys.forEach((value, key) => {
