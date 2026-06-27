@@ -6,6 +6,8 @@ import {availableKeys} from '@/utils/shared.tsx'
 import {TimeService} from '@/services/times.service'
 import {Time} from '@/utils/interfaces.tsx'
 
+const timeService = new TimeService()
+
 function AddProjectButton ({times, dialogSignal}: {
     times: Map<string, Time>,
     dialogSignal: (state: boolean) => void
@@ -18,7 +20,6 @@ function AddProjectButton ({times, dialogSignal}: {
     }, [])
 
     const addNewTime = () => {
-        const timeService = new TimeService()
         const index = availableKeys.get(selectedKey)!.order_index
         timeService.newTime(clientName, selectedKey, index).then((res) => {
             if (res) {

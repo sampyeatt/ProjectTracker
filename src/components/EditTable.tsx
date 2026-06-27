@@ -1,6 +1,6 @@
 import {Time} from '@/utils/interfaces.tsx'
 import {IconButton, Input, Stack, Table} from '@chakra-ui/react'
-import {JSX, useCallback, useState} from 'react'
+import {JSX, useCallback, useMemo, useState} from 'react'
 import {RiDeleteBinLine, RiEditLine, RiSave3Line} from 'react-icons/ri'
 import {FcCancel} from 'react-icons/fc'
 import SelectAvailableKeys from '@/components/SelectAvailableKeys.tsx'
@@ -11,7 +11,6 @@ function EditTable ({times, updateTimeCB, deleteTimeCB}: {
     deleteTimeCB: (id: number, key: string) => void
 }) {
     const [editKey, setEditKey] = useState('')
-    const projects: Array<JSX.Element> = []
     const [newClientName, setNewClientName] = useState('')
     const [selectedKey, setSelectedKey] = useState('')
 
@@ -19,67 +18,66 @@ function EditTable ({times, updateTimeCB, deleteTimeCB}: {
         setSelectedKey(data)
     }, [])
 
-    const editLine = (key: string) => {
+    const editLine = useCallback((key: string) => {
         setEditKey(key)
-    }
+    }, [])
 
-    const saveLineEdit = (key: string) => {
+    const saveLineEdit = useCallback((key: string) => {
         const updatedTime = times.get(key)!
-        if (newClientName != '') {
+        if (newClientName !== '') {
             updatedTime.client_name = newClientName
             setNewClientName('')
         }
-        if (selectedKey != '') {
+        if (selectedKey !== '') {
             updatedTime.key = selectedKey
             setSelectedKey('')
         }
         updateTimeCB(updatedTime)
         setEditKey('')
-        console.log('Line Saved')
-    }
+    }, [times, newClientName, selectedKey, updateTimeCB])
 
-    const cancelLineEdit = () => {
+    const cancelLineEdit = useCallback(() => {
         setEditKey('')
         setNewClientName('')
-        console.log('Line Cancel')
-    }
+    }, [])
 
-    const deleteLine = (id: number, key: string) => {
+    const deleteLine = useCallback((id: number, key: string) => {
         deleteTimeCB(id, key)
-        times.delete(key)
         setEditKey('')
-    }
+    }, [deleteTimeCB])
 
-    times.forEach((time) => {
-        if (editKey != time.key) {
-            projects.push(
-                <Table.Row key={time.key}>
-                    <Table.Cell className={'w-35!'}>{time.client_name}</Table.Cell>
-                    <Table.Cell className={'w-35!'}>{time.key}</Table.Cell>
-                    <Table.Cell><IconButton onClick={() => editLine(time.key)}
-                        disabled={editKey != ''}><RiEditLine/></IconButton></Table.Cell>
-                </Table.Row>
-            )
-        } else if (editKey === time.key) {
-            projects.push(
-                <Table.Row key={time.key}>
-                    <Table.Cell className={'w-35!'}><Input value={newClientName} placeholder={time.client_name}
-                        onChange={(e) => setNewClientName(e.target.value)}/></Table.Cell>
-                    <Table.Cell className={'w-35!'}> <SelectAvailableKeys times={times} hideLabel={true} onDataFromChild={getSelectedKeyFromChild}/>
-                    </Table.Cell>
-                    <Table.Cell>
-                        <Stack direction={'row'}>
-                            <IconButton
-                                onClick={() => saveLineEdit(time.key)}><RiSave3Line/></IconButton>
-                            <IconButton onClick={() => cancelLineEdit()}><FcCancel/></IconButton>
-                            <IconButton
-                                onClick={() => deleteLine(time.id, time.key)}><RiDeleteBinLine/></IconButton>
-                        </Stack>
-                    </Table.Cell>
-                </Table.Row>
-            )
-        }
-    })
+    const projects: JSX.Element[] = useMemo(() => {
+        const rows: JSX.Element[] = []
+        times.forEach((time) => {
+            if (editKey !== time.key) {
+                rows.push(
+                    <Table.Row key={time.key}>
+                        <Table.Cell className={'w-35!'}>{time.client_name}</Table.Cell>
+                        <Table.Cell className={'w-35!'}>{time.key}</Table.Cell>
+                        <Table.Cell><IconButton onClick={() => editLine(time.key)}
+                            disabled={editKey !== ''}><RiEditLine/></IconButton></Table.Cell>
+                    </Table.Row>
+                )
+            } else {
+                rows.push(
+                    <Table.Row key={time.key}>
+                        <Table.Cell className={'w-35!'}><Input value={newClientName} placeholder={time.client_name}
+                            onChange={(e) => setNewClientName(e.target.value)}/></Table.Cell>
+                        <Table.Cell className={'w-35!'}><SelectAvailableKeys times={times} hideLabel={true} onDataFromChild={getSelectedKeyFromChild}/>
+                        </Table.Cell>
+                        <Table.Cell>
+                            <Stack direction={'row'}>
+                                <IconButton onClick={() => saveLineEdit(time.key)}><RiSave3Line/></IconButton>
+                                <IconButton onClick={cancelLineEdit}><FcCancel/></IconButton>
+                                <IconButton onClick={() => deleteLine(time.id, time.key)}><RiDeleteBinLine/></IconButton>
+                            </Stack>
+                        </Table.Cell>
+                    </Table.Row>
+                )
+            }
+        })
+        return rows
+    }, [times, editKey, newClientName, editLine, saveLineEdit, cancelLineEdit, deleteLine, getSelectedKeyFromChild])
 
     return (
         <Table.Root>
