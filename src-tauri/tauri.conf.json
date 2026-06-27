@@ -15,7 +15,8 @@
         "title": "projecttracker",
         "width": 800,
         "height": 600,
-        "decorations": true
+        "decorations": true,
+        "theme": "Dark"
       }
     ],
     "security": {

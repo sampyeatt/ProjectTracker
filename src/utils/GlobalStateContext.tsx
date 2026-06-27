@@ -1,3 +1,3 @@
-import { createContext } from 'react'
-
-const GlobalStateContext = createContext(null)
+// import { createContext } from 'react'
+//
+// const GlobalStateContext = createContext(null)
