@@ -15,7 +15,7 @@
         "title": "projecttracker",
         "width": 800,
         "height": 600,
-        "decorations": true,
+        "decorations": false,
         "theme": "Dark"
       }
     ],
@@ -27,7 +27,7 @@
     "active": true,
     "targets": "all",
     "icon": [
-      "icons/icon.png",
+      "icons/app-icon.png",
       "icons/icon.svg",
       "icons/icon.ico"
     ]
