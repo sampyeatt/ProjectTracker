@@ -127,7 +127,7 @@ function App () {
     return (
         <main className='container' onKeyDown={handleKeyboardEvent} tabIndex={0}>
             <div className='flex place-content-start'>
-                <CloseButton onClick={closeWindow} className={'w-13! h-13!'}/>
+                <CloseButton onClick={closeWindow} className={'w-13! h-13! bg-red-900! hover:bg-red-800!'}/>
             </div>
             <Stack gap={'5'}>
                 <NavBar times={times} updateTimeCB={updateTime} deleteTimeCB={deleteTime}

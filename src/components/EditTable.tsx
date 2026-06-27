@@ -54,7 +54,7 @@ function EditTable ({times, updateTimeCB, deleteTimeCB}: {
                     <Table.Row key={time.key}>
                         <Table.Cell className={'w-35!'}>{time.client_name}</Table.Cell>
                         <Table.Cell className={'w-35!'}>{time.key}</Table.Cell>
-                        <Table.Cell><IconButton onClick={() => editLine(time.key)}
+                        <Table.Cell><IconButton className={'bg-violet-950! hover:bg-violet-900!'} title={'Edit'} onClick={() => editLine(time.key)}
                             disabled={editKey !== ''}><RiEditLine/></IconButton></Table.Cell>
                     </Table.Row>
                 )
@@ -67,9 +67,9 @@ function EditTable ({times, updateTimeCB, deleteTimeCB}: {
                         </Table.Cell>
                         <Table.Cell>
                             <Stack direction={'row'}>
-                                <IconButton onClick={() => saveLineEdit(time.key)}><RiSave3Line/></IconButton>
-                                <IconButton onClick={cancelLineEdit}><FcCancel/></IconButton>
-                                <IconButton onClick={() => deleteLine(time.id, time.key)}><RiDeleteBinLine/></IconButton>
+                                <IconButton onClick={() => saveLineEdit(time.key)} title={'Save'} className={'bg-emerald-900! hover:bg-emerald-800!'}><RiSave3Line/></IconButton>
+                                <IconButton onClick={cancelLineEdit} title={'Cancel'} className={'bg-gray-800! hover:bg-gray-700!'}><FcCancel/></IconButton>
+                                <IconButton onClick={() => deleteLine(time.id, time.key)} title={'Delete'} className={'bg-red-900! hover:bg-red-800!'}><RiDeleteBinLine/></IconButton>
                             </Stack>
                         </Table.Cell>
                     </Table.Row>
