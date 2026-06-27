@@ -38,7 +38,7 @@ function AddProjectButton ({times, dialogSignal}: {
         <div className='flex justify-center p-2'>
             <Dialog.Root>
                 <Dialog.Trigger asChild>
-                    <Button className='w-33! h-12!' onClick={() => dialogSignal(true)}>
+                    <Button className='w-33! h-12! bg-orange-900! hover:bg-orange-800! text-white!' onClick={() => dialogSignal(true)}>
                         <RiAddLargeLine/> Add Project
                     </Button>
                 </Dialog.Trigger>

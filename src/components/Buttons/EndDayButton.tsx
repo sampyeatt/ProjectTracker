@@ -56,7 +56,7 @@ function EndDayButton ({times, onStopTime, dialogSignal, endDay}: {
         <div className='flex justify-center p-2'>
             <Dialog.Root>
                 <Dialog.Trigger asChild>
-                    <Button className='w-33! h-12!' onClick={handleOpenDialog}>
+                    <Button className='w-33! h-12! bg-emerald-900! hover:bg-emerald-800! text-white!' onClick={handleOpenDialog}>
                         <RiEditLine/> End Day
                     </Button>
                 </Dialog.Trigger>

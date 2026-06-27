@@ -21,7 +21,7 @@ function EditProjectButton ({times, updateTimeCB, deleteTimeCB, dialogSignal}: {
         <div className='flex justify-center p-2'>
             <Dialog.Root>
                 <Dialog.Trigger asChild>
-                    <Button className='w-33! h-12!' onClick={handleOpenDialog}>
+                    <Button className='w-33! h-12! bg-sky-900! hover:bg-sky-800! text-white!' onClick={handleOpenDialog}>
                         <RiEditLine/> Edit Projects
                     </Button>
                 </Dialog.Trigger>
