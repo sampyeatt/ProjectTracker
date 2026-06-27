@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "tauri-dev": {
+      "source": "Liquid4All/cookbook",
+      "sourceType": "github",
+      "skillPath": "examples/localcowork/.claude/skills/tauri-dev/SKILL.md",
+      "computedHash": "c52f013c100bc5e677cfb19f0ea1f6990ec354a9ee01e11ff28809702edc29da"
+    }
+  }
+}
