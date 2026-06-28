@@ -114,7 +114,7 @@ jobs:
               pacman -S --noconfirm base-devel &&
               useradd -m builduser &&
               chown -R builduser /build &&
-              su builduser -c 'makepkg -s --noconfirm --noprogressbar'
+              su builduser -c 'makepkg --noconfirm --noprogressbar --nodeps'
             "
 
       - name: Upload AUR package to release
