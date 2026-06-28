@@ -70,3 +70,57 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+
+  build-aur:
+    needs: publish-tauri
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get app version
+        id: version
+        run: |
+          VERSION=$(python3 -c "import json; print(json.load(open('src-tauri/tauri.conf.json'))['version'])")
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Download AppImage and compute checksum
+        id: checksum
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          APPIMAGE="projecttracker_${VERSION}_amd64.AppImage"
+          wget -q "https://github.com/sampyeatt/ProjectTracker/releases/download/app-v${VERSION}/${APPIMAGE}" -O "${APPIMAGE}"
+          SHA256=$(sha256sum "${APPIMAGE}" | cut -d' ' -f1)
+          echo "SHA256=${SHA256}" >> $GITHUB_OUTPUT
+          echo "APPIMAGE=${APPIMAGE}" >> $GITHUB_OUTPUT
+
+      - name: Generate PKGBUILD
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          SHA256=${{ steps.checksum.outputs.SHA256 }}
+          cp aur/PKGBUILD ./PKGBUILD
+          sed -i "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD
+          sed -i "s/sha256sums_x86_64=('SKIP')/sha256sums_x86_64=('${SHA256}')/" PKGBUILD
+
+      - name: Build AUR package
+        run: |
+          docker run --rm \
+            -v "$PWD:/build" \
+            -w /build \
+            archlinux:latest \
+            bash -c "
+              pacman -Syu --noconfirm &&
+              pacman -S --noconfirm base-devel &&
+              useradd -m builduser &&
+              chown -R builduser /build &&
+              su builduser -c 'makepkg -s --noconfirm --noprogressbar'
+            "
+
+      - name: Upload AUR package to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          PKG=$(ls *.pkg.tar.zst | head -1)
+          gh release upload "app-v${VERSION}" "${PKG}" --clobber
