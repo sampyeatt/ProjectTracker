@@ -1,6 +1,6 @@
 # Maintainer: sam <sampyeatt4@proton.me>
 pkgname=ProjectTracker
-pkgver=0.2.0
+pkgver=0.3.0
 pkgrel=1
 pkgdesc="Project tracker application"
 arch=('x86_64' 'aarch64')
