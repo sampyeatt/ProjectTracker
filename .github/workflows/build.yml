@@ -85,21 +85,20 @@ jobs:
           VERSION=$(python3 -c "import json; print(json.load(open('src-tauri/tauri.conf.json'))['version'])")
           echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Download AppImage and compute checksum
+      - name: Download DEB and compute checksum
         id: checksum
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
-          APPIMAGE="projecttracker_${VERSION}_amd64.AppImage"
-          wget -q "https://github.com/sampyeatt/ProjectTracker/releases/download/app-v${VERSION}/${APPIMAGE}" -O "${APPIMAGE}"
-          SHA256=$(sha256sum "${APPIMAGE}" | cut -d' ' -f1)
+          DEB="ProjectTracker_${VERSION}_amd64.deb"
+          wget -q "https://github.com/sampyeatt/ProjectTracker/releases/download/app-v${VERSION}/${DEB}" -O "${DEB}"
+          SHA256=$(sha256sum "${DEB}" | cut -d' ' -f1)
           echo "SHA256=${SHA256}" >> $GITHUB_OUTPUT
-          echo "APPIMAGE=${APPIMAGE}" >> $GITHUB_OUTPUT
+          echo "DEB=${DEB}" >> $GITHUB_OUTPUT
 
       - name: Generate PKGBUILD
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
           SHA256=${{ steps.checksum.outputs.SHA256 }}
-          cp aur/PKGBUILD ./PKGBUILD
           sed -i "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD
           sed -i "s/sha256sums_x86_64=('SKIP')/sha256sums_x86_64=('${SHA256}')/" PKGBUILD
 
@@ -117,10 +116,10 @@ jobs:
               su builduser -c 'makepkg --noconfirm --noprogressbar --nodeps'
             "
 
-      - name: Upload AUR package to release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          PKG=$(ls *.pkg.tar.zst | head -1)
-          gh release upload "app-v${VERSION}" "${PKG}" --clobber
+#      - name: Upload AUR package to release
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          VERSION=${{ steps.version.outputs.VERSION }}
+#          PKG=$(ls *.pkg.tar.zst | head -1)
+#          gh release upload "app-v${VERSION}" "${PKG}" --clobber
