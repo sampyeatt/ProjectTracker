@@ -1,0 +1,17 @@
+pkgbase = ProjectTracker
+	pkgdesc = Project tracker application
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/sampyeatt/ProjectTracker
+	install = ProjectTracker.install
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	depends = webkit2gtk-4.1
+	depends = libayatana-appindicator
+	depends = librsvg
+	source_x86_64 = https://github.com/sampyeatt/ProjectTracker/releases/download/app-v0.1.0/projecttracker_0.1.0_arm64.deb
+	sha256sums_x86_64 = 523db92d3c7c3545aa50041dc94bdc44cd2f9a09f60c0d2f46444ece6d64d765
+	sha256sums_aarch64 = eb8a2bcab7537a31390751c8e061e7e977200a9767dcd36c51dd78038a4b8235
+
+pkgname = ProjectTracker
