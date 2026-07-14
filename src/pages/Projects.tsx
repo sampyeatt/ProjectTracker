@@ -1,26 +1,27 @@
-import {SimpleGrid, Box} from '@chakra-ui/react'
-import ProjectButton from '../components/Buttons/ProjectButton.tsx'
 import {JSX, useMemo} from 'react'
-import {Time} from '@/utils/interfaces.tsx'
+import ProjectButton from '../components/Buttons/ProjectButton.tsx'
 import {availableKeys} from '@/utils/shared.tsx'
+import {useTimeStore} from '@/store/timeStore'
 
-function Projects ({times, onStartTime, onStopTime}: { times: Map<string, Time>, onStartTime: (data: Time) => void, onStopTime: (data: Time) => void}) {
+function Projects () {
+    const times = useTimeStore((s) => s.times)
+
     const projects: JSX.Element[] = useMemo(() => {
         const result: JSX.Element[] = []
         availableKeys.forEach((value) => {
             const displayTime = times.has(value.key) ? times.get(value.key)! : value
             result.push(
-                <Box key={displayTime.id}><ProjectButton project={displayTime} onStartTime={onStartTime} onStopTime={onStopTime}/></Box>
+                <div key={displayTime.id}><ProjectButton project={displayTime}/></div>
             )
         })
         return result
-    }, [times, onStartTime, onStopTime])
+    }, [times])
 
     return (
         <div className='flex justify-center p-2'>
-            <SimpleGrid columns={4} gap={2}>
+            <div className='grid grid-cols-4 gap-2'>
                 {projects}
-            </SimpleGrid>
+            </div>
         </div>
     )
 }

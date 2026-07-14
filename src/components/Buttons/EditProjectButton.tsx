@@ -1,53 +1,37 @@
-import {Button, CloseButton, Dialog, Portal} from '@chakra-ui/react'
-import {RiEditLine} from 'react-icons/ri'
-import {JSX, useState} from 'react'
-import {Time} from '@/utils/interfaces.tsx'
+import {useState} from 'react'
+import {Button} from 'primereact/button'
+import {Dialog} from 'primereact/dialog'
 import EditTable from '@/components/EditTable.tsx'
+import {useTimeStore} from '@/store/timeStore'
 
-function EditProjectButton ({times, updateTimeCB, deleteTimeCB, dialogSignal}: {
-    times: Map<string, Time>,
-    updateTimeCB: (data: Time) => void,
-    deleteTimeCB: (id: number, key: string) => void,
-    dialogSignal: (state: boolean) => void
-}) {
-    const [table, setTable] = useState<JSX.Element>()
+function EditProjectButton () {
+    const setDialogOpen = useTimeStore((s) => s.setDialogOpen)
+    const [visible, setVisible] = useState(false)
 
-    function handleOpenDialog () {
-        dialogSignal(true)
-        setTable(<EditTable times={times} updateTimeCB={updateTimeCB} deleteTimeCB={deleteTimeCB}/>)
+    const openDialog = () => {
+        setVisible(true)
+        setDialogOpen(true)
     }
+
+    const closeDialog = () => {
+        setVisible(false)
+        setDialogOpen(false)
+    }
+
+    const footer = (
+        <div className='flex justify-end'>
+            <Button label='Done' className={'bg-emerald-900!'} outlined onClick={closeDialog}/>
+        </div>
+    )
 
     return (
         <div className='flex justify-center p-2'>
-            <Dialog.Root>
-                <Dialog.Trigger asChild>
-                    <Button className='w-33! h-12! bg-sky-900! hover:bg-sky-800! text-white!' onClick={handleOpenDialog}>
-                        <RiEditLine/> Edit Projects
-                    </Button>
-                </Dialog.Trigger>
-                <Portal>
-                    <Dialog.Backdrop>
-                        <Dialog.Positioner>
-                            <Dialog.Content>
-                                <Dialog.Header>
-                                    Edit Projects
-                                </Dialog.Header>
-                                <Dialog.Body>
-                                    {table}
-                                </Dialog.Body>
-                                <Dialog.Footer>
-                                    <Dialog.ActionTrigger asChild>
-                                        <Button variant='outline' onClick={() => dialogSignal(false)}>Done</Button>
-                                    </Dialog.ActionTrigger>
-                                </Dialog.Footer>
-                                <Dialog.CloseTrigger asChild>
-                                    <CloseButton size='sm' onClick={() => dialogSignal(false)}/>
-                                </Dialog.CloseTrigger>
-                            </Dialog.Content>
-                        </Dialog.Positioner>
-                    </Dialog.Backdrop>
-                </Portal>
-            </Dialog.Root>
+            <Button label='Edit Projects' icon='pi pi-pencil'
+                className='w-33! h-12! bg-sky-900! hover:bg-sky-800! border-sky-900! text-white!' onClick={openDialog}/>
+            <Dialog header='Edit Projects' visible={visible} onHide={closeDialog}
+                footer={footer} style={{width: '32rem'}}>
+                {visible && <EditTable/>}
+            </Dialog>
         </div>
     )
 }

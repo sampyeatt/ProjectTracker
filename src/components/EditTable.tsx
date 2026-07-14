@@ -1,97 +1,104 @@
+import {useState} from 'react'
+import {useForm, Controller} from 'react-hook-form'
+import {DataTable} from 'primereact/datatable'
+import {Column} from 'primereact/column'
+import {Button} from 'primereact/button'
+import {InputText} from 'primereact/inputtext'
 import {Time} from '@/utils/interfaces.tsx'
-import {IconButton, Input, Stack, Table} from '@chakra-ui/react'
-import {JSX, useCallback, useMemo, useState} from 'react'
-import {RiDeleteBinLine, RiEditLine, RiSave3Line} from 'react-icons/ri'
-import {FcCancel} from 'react-icons/fc'
 import SelectAvailableKeys from '@/components/SelectAvailableKeys.tsx'
+import {useTimeStore} from '@/store/timeStore'
 
-function EditTable ({times, updateTimeCB, deleteTimeCB}: {
-    times: Map<string, Time>,
-    updateTimeCB: (data: Time) => void,
-    deleteTimeCB: (id: number, key: string) => void
-}) {
+interface EditRowForm {
+    clientName: string
+    selectedKey: string
+}
+
+function EditTable () {
+    const times = useTimeStore((s) => s.times)
+    const updateTime = useTimeStore((s) => s.updateTime)
+    const deleteTime = useTimeStore((s) => s.deleteTime)
+
     const [editKey, setEditKey] = useState('')
-    const [newClientName, setNewClientName] = useState('')
-    const [selectedKey, setSelectedKey] = useState('')
+    const {control, handleSubmit, reset} = useForm<EditRowForm>({
+        defaultValues: {clientName: '', selectedKey: ''}
+    })
 
-    const getSelectedKeyFromChild = useCallback((data: string) => {
-        setSelectedKey(data)
-    }, [])
+    const rows = Array.from(times.values())
 
-    const editLine = useCallback((key: string) => {
-        setEditKey(key)
-    }, [])
+    const startEdit = (time: Time) => {
+        reset({clientName: time.client_name, selectedKey: ''})
+        setEditKey(time.key)
+    }
 
-    const saveLineEdit = useCallback((key: string) => {
-        const updatedTime = times.get(key)!
-        if (newClientName !== '') {
-            updatedTime.client_name = newClientName
-            setNewClientName('')
+    const cancelEdit = () => {
+        setEditKey('')
+        reset({clientName: '', selectedKey: ''})
+    }
+
+    const saveEdit = (original: Time) => handleSubmit((data) => {
+        const updated: Time = {...original}
+        if (data.clientName !== '') updated.client_name = data.clientName
+        if (data.selectedKey !== '') updated.key = data.selectedKey
+        updateTime(updated)
+        cancelEdit()
+    })()
+
+    const removeRow = (time: Time) => {
+        deleteTime(time.id, time.key)
+        cancelEdit()
+    }
+
+    const clientBody = (time: Time) => {
+        if (editKey !== time.key) return <span>{time.client_name}</span>
+        return (
+            <Controller
+                name='clientName'
+                control={control}
+                render={({field}) => <InputText {...field} placeholder={time.client_name} className='w-full'/>}
+            />
+        )
+    }
+
+    const keyBody = (time: Time) => {
+        if (editKey !== time.key) return <span>{time.key}</span>
+        return (
+            <Controller
+                name='selectedKey'
+                control={control}
+                render={({field}) => (
+                    <SelectAvailableKeys times={times} value={field.value} onChange={field.onChange} className='w-full'/>
+                )}
+            />
+        )
+    }
+
+    const actionBody = (time: Time) => {
+        if (editKey !== time.key) {
+            return (
+                <Button icon='pi pi-pencil' title='Edit' className={'bg-purple-950! border-purple-950! hover:bg-purple-900!'}
+                    disabled={editKey !== ''} onClick={() => startEdit(time)}/>
+            )
+        } else {
+            return (
+                <div className='flex flex-row gap-2'>
+                    <Button icon='pi pi-check' title='Save' className={'bg-green-900! border-green-900! hover:bg-green-800!'} onClick={() => saveEdit(time)}/>
+                    <Button icon='pi pi-times' title='Cancel' className={'bg-orange-600! border-orange-500! hover:bg-orange-600!'} onClick={cancelEdit}/>
+                    <Button icon='pi pi-trash' title='Delete' className={'bg-red-900! border-red-900! hover:bg-red-800!'} onClick={() => removeRow(time)}/>
+                </div>
+            )
         }
-        if (selectedKey !== '') {
-            updatedTime.key = selectedKey
-            setSelectedKey('')
-        }
-        updateTimeCB(updatedTime)
-        setEditKey('')
-    }, [times, newClientName, selectedKey, updateTimeCB])
+    }
 
-    const cancelLineEdit = useCallback(() => {
-        setEditKey('')
-        setNewClientName('')
-    }, [])
-
-    const deleteLine = useCallback((id: number, key: string) => {
-        deleteTimeCB(id, key)
-        setEditKey('')
-    }, [deleteTimeCB])
-
-    const projects: JSX.Element[] = useMemo(() => {
-        const rows: JSX.Element[] = []
-        times.forEach((time) => {
-            if (editKey !== time.key) {
-                rows.push(
-                    <Table.Row key={time.key}>
-                        <Table.Cell className={'w-35!'}>{time.client_name}</Table.Cell>
-                        <Table.Cell className={'w-35!'}>{time.key}</Table.Cell>
-                        <Table.Cell><IconButton className={'bg-violet-950! hover:bg-violet-900!'} title={'Edit'} onClick={() => editLine(time.key)}
-                            disabled={editKey !== ''}><RiEditLine/></IconButton></Table.Cell>
-                    </Table.Row>
-                )
-            } else {
-                rows.push(
-                    <Table.Row key={time.key}>
-                        <Table.Cell className={'w-35!'}><Input value={newClientName} placeholder={time.client_name}
-                            onChange={(e) => setNewClientName(e.target.value)}/></Table.Cell>
-                        <Table.Cell className={'w-35!'}><SelectAvailableKeys times={times} hideLabel={true} onDataFromChild={getSelectedKeyFromChild}/>
-                        </Table.Cell>
-                        <Table.Cell>
-                            <Stack direction={'row'}>
-                                <IconButton onClick={() => saveLineEdit(time.key)} title={'Save'} className={'bg-emerald-900! hover:bg-emerald-800!'}><RiSave3Line/></IconButton>
-                                <IconButton onClick={cancelLineEdit} title={'Cancel'} className={'bg-gray-800! hover:bg-gray-700!'}><FcCancel/></IconButton>
-                                <IconButton onClick={() => deleteLine(time.id, time.key)} title={'Delete'} className={'bg-red-900! hover:bg-red-800!'}><RiDeleteBinLine/></IconButton>
-                            </Stack>
-                        </Table.Cell>
-                    </Table.Row>
-                )
-            }
-        })
-        return rows
-    }, [times, editKey, newClientName, editLine, saveLineEdit, cancelLineEdit, deleteLine, getSelectedKeyFromChild])
-
+    // key={editKey} forces a remount when the edited row changes: PrimeReact's
+    // DataTable deep-compares its props and won't re-run the body templates for
+    // external state (editKey) alone, so without this the row never swaps into
+    // its edit inputs.
     return (
-        <Table.Root>
-            <Table.Header>
-                <Table.Row>
-                    <Table.ColumnHeader>Client</Table.ColumnHeader>
-                    <Table.ColumnHeader>Key</Table.ColumnHeader>
-                    <Table.ColumnHeader>Actions</Table.ColumnHeader>
-                </Table.Row>
-            </Table.Header>
-            <Table.Body>
-                {projects}
-            </Table.Body>
-        </Table.Root>
+        <DataTable key={editKey} value={rows} dataKey='key' size='small'>
+            <Column header='Client' body={clientBody}/>
+            <Column header='Key' body={keyBody}/>
+            <Column header='Actions' body={actionBody}/>
+        </DataTable>
     )
 }
 

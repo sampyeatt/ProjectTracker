@@ -1,80 +1,78 @@
-import {Button, CloseButton, Dialog, Input, Portal, Stack} from '@chakra-ui/react'
-import {RiAddLargeLine} from 'react-icons/ri'
+import {useState} from 'react'
+import {useForm, Controller} from 'react-hook-form'
+import {Button} from 'primereact/button'
+import {Dialog} from 'primereact/dialog'
+import {InputText} from 'primereact/inputtext'
 import SelectAvailableKeys from '@/components/SelectAvailableKeys.tsx'
-import {useCallback, useState} from 'react'
-import {availableKeys} from '@/utils/shared.tsx'
-import {TimeService} from '@/services/times.service'
-import {Time} from '@/utils/interfaces.tsx'
+import {useTimeStore} from '@/store/timeStore'
 
-const timeService = new TimeService()
+interface AddProjectForm {
+    clientName: string
+    selectedKey: string
+}
 
-function AddProjectButton ({times, dialogSignal}: {
-    times: Map<string, Time>,
-    dialogSignal: (state: boolean) => void
-}) {
-    const [clientName, setClientName] = useState('')
-    const [selectedKey, setSelectedKey] = useState('')
+function AddProjectButton () {
+    const times = useTimeStore((s) => s.times)
+    const newTime = useTimeStore((s) => s.newTime)
+    const setDialogOpen = useTimeStore((s) => s.setDialogOpen)
+    const [visible, setVisible] = useState(false)
 
-    const getSelectedKeyFromChild = useCallback((data: string) => {
-        setSelectedKey(data)
-    }, [])
+    const {control, handleSubmit, reset, formState: {errors}} = useForm<AddProjectForm>({
+        defaultValues: {clientName: '', selectedKey: ''}
+    })
 
-    const addNewTime = () => {
-        const index = availableKeys.get(selectedKey)!.order_index
-        timeService.newTime(clientName, selectedKey, index).then((res) => {
-            if (res) {
-                setClientName('')
-                setSelectedKey('')
-            }
-            if (res === null) {
-                setClientName('')
-                setSelectedKey('')
-                alert('Error adding time')
-            }
-        })
-        dialogSignal(false)
+    const openDialog = () => {
+        reset({clientName: '', selectedKey: ''})
+        setVisible(true)
+        setDialogOpen(true)
     }
+
+    const closeDialog = () => {
+        setVisible(false)
+        setDialogOpen(false)
+    }
+
+    const onSubmit = async (data: AddProjectForm) => {
+        const ok = await newTime(data.clientName, data.selectedKey)
+        if (!ok) alert('Error adding time')
+        closeDialog()
+    }
+
+    const footer = (
+        <div className='flex justify-end gap-2'>
+            <Button label='Cancel' className={'bg-red-800!'} outlined onClick={closeDialog}/>
+            <Button label='Save' className={'bg-emerald-900!'} onClick={handleSubmit(onSubmit)}/>
+        </div>
+    )
 
     return (
         <div className='flex justify-center p-2'>
-            <Dialog.Root>
-                <Dialog.Trigger asChild>
-                    <Button className='w-33! h-12! bg-orange-900! hover:bg-orange-800! text-white!' onClick={() => dialogSignal(true)}>
-                        <RiAddLargeLine/> Add Project
-                    </Button>
-                </Dialog.Trigger>
-                <Portal>
-                    <Dialog.Backdrop>
-                        <Dialog.Positioner>
-                            <Dialog.Content>
-                                <Dialog.Header>
-                                    Add Project
-                                </Dialog.Header>
-                                <Dialog.Body>
-                                    <Stack gap={3}>
-                                        <Input placeholder={'Client Name'} value={clientName}
-                                            onChange={(e) => setClientName(e.target.value)}></Input>
-                                        <SelectAvailableKeys times={times} hideLabel={false}
-                                            onDataFromChild={getSelectedKeyFromChild}/>
-                                    </Stack>
-                                </Dialog.Body>
-                                <Dialog.Footer>
-                                    <Dialog.ActionTrigger asChild>
-                                        <Button variant='outline' onClick={() => dialogSignal(false)}>Cancel</Button>
-                                    </Dialog.ActionTrigger>
-                                    <Dialog.ActionTrigger asChild>
-                                        <Button onClick={addNewTime}>Save</Button>
-                                    </Dialog.ActionTrigger>
-                                </Dialog.Footer>
-                                <Dialog.CloseTrigger asChild>
-                                    <CloseButton size='sm' onClick={() => dialogSignal(false)}/>
-                                </Dialog.CloseTrigger>
-                            </Dialog.Content>
-                        </Dialog.Positioner>
-                    </Dialog.Backdrop>
-                </Portal>
-            </Dialog.Root>
-
+            <Button label='Add Project' icon='pi pi-plus'
+                className='w-33! h-12! bg-orange-900! hover:bg-orange-800! border-orange-900! text-white!' onClick={openDialog}/>
+            <Dialog header='Add Project' visible={visible} onHide={closeDialog}
+                footer={footer} style={{width: '25rem'}}>
+                <div className='flex flex-col gap-3'>
+                    <Controller
+                        name='clientName'
+                        control={control}
+                        rules={{required: 'Client name is required'}}
+                        render={({field}) => (
+                            <InputText {...field} placeholder='Client Name'
+                                className={errors.clientName ? 'p-invalid' : ''}/>
+                        )}
+                    />
+                    <Controller
+                        name='selectedKey'
+                        control={control}
+                        rules={{required: 'A key is required'}}
+                        render={({field}) => (
+                            <SelectAvailableKeys times={times} value={field.value}
+                                onChange={field.onChange}
+                                className={errors.selectedKey ? 'p-invalid' : ''}/>
+                        )}
+                    />
+                </div>
+            </Dialog>
         </div>
     )
 }

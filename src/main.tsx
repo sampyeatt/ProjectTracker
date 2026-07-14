@@ -1,12 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
-import { Provider } from '@/components/ui/provider'
+import {PrimeReactProvider} from 'primereact/api'
+import 'primereact/resources/themes/lara-dark-purple/theme.css'
+import 'primereact/resources/primereact.min.css'
+import 'primeicons/primeicons.css'
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <React.StrictMode>
-        <Provider>
+        <PrimeReactProvider>
             <App />
-        </Provider>
+        </PrimeReactProvider>
     </React.StrictMode>
 )

@@ -1,32 +1,31 @@
-import {Button} from '@chakra-ui/react'
+import {Button} from 'primereact/button'
 import {Time} from '@/utils/interfaces.tsx'
+import {useTimeStore} from '@/store/timeStore'
 
-function ProjectButton ({project, onStartTime, onStopTime}: {
-    project: Time,
-    onStartTime: (data: Time) => void,
-    onStopTime: (data: Time) => void
-}) {
-    let varient: 'outline' | 'subtle' = 'outline'
-    const dis = (project.active === 0)
-    if (project.running === 1) varient = 'subtle'
-    let buttonContent = <p>{project.key}</p>
+function ProjectButton ({project}: { project: Time }) {
+    const startTime = useTimeStore((s) => s.startTime)
+    const stopTime = useTimeStore((s) => s.stopTime)
 
-    if (project.active) {
-        buttonContent = <p>{project.client_name}<br/>{(project.total_time / (1000 * 60 * 60)).toFixed(2)} hours</p>
-    }
+    const disabled = project.active === 0
+    const running = project.running === 1
+
+    const label = project.active
+        ? `${project.client_name}\n${(project.total_time / (1000 * 60 * 60)).toFixed(2)} hours`
+        : project.key
 
     const handleClick = () => {
-        if (!project.running) {
-            onStartTime(project)
-        } else if (project.running) {
-            onStopTime(project)
-        }
+        if (!project.running) startTime(project)
+        else stopTime(project)
     }
 
+    const stateClasses = running
+        ? 'bg-purple-800! hover:bg-purple-700! border-purple-800!'
+        : 'bg-purple-950! hover:bg-purple-900! border-purple-950!'
+
     return (
-        <Button asChild className='w-33! h-16.5!' disabled={dis} variant={varient} colorPalette={'purple'}
-            onClick={handleClick} onKeyDown={(e) => console.log(e)}>
-            {buttonContent}
+        <Button className={`w-33! h-16.5! ${stateClasses} whitespace-pre-line justify-center text-center`}
+                outlined={!running} disabled={disabled} onClick={handleClick}>
+            {label}
         </Button>
     )
 }
