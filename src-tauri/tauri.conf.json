@@ -15,8 +15,7 @@
         "title": "ProjectTracker",
         "width": 800,
         "height": 600,
-        "decorations": false,
-        "theme": "Dark"
+        "decorations": false
       }
     ],
     "security": {
