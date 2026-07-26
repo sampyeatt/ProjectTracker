@@ -25,6 +25,7 @@ interface TimeState {
     endDay: () => Promise<void>
     setDialogOpen: (state: boolean) => void
     handleKey: (code: string) => void
+    activeTime?: Time
 }
 
 export const useTimeStore = create<TimeState>((set, get) => ({
@@ -34,26 +35,32 @@ export const useTimeStore = create<TimeState>((set, get) => ({
     loadTimes: async () => {
         const res = await fetchTimes()
         set({times: res})
+        res.forEach(t => {
+            if (t.running) {
+                set({activeTime: t})
+            }
+        })
     },
 
     startTime: (data: Time) => {
-        const current = get().times
         const date = Date.now()
-        current.forEach((value: Time) => {
-            if (value.running === 1) {
-                timeService.stopTime(value.total_time + (date - value.current_time), value.id)
-            }
-        })
+        const value = get().activeTime
+        if (value) {
+            const inactiveTime = value.total_time + (date - value.current_time)
+            timeService.stopTime(inactiveTime, value.id)
+        }
         timeService.startTime(data.id, 1, date).then((res) => {
             if (res) {
                 set((state) => {
                     const next = new Map(state.times)
-                    next.forEach((v, k) => {
-                        if (v.running === 1) next.set(k, {...v, running: 0})
-                    })
                     next.set(data.key, {...data, running: 1, current_time: date})
+                    if (value) {
+                        const inactiveTime = value.total_time + (date - value.current_time)
+                        next.set(value.key, {...value, running: 0, total_time: inactiveTime})
+                    }
                     return {times: next}
                 })
+                set({activeTime: {...data, running: 1, current_time: date}})
             }
         })
     },
@@ -66,6 +73,7 @@ export const useTimeStore = create<TimeState>((set, get) => ({
                 set((state) => ({
                     times: new Map(state.times).set(data.key, {...data, running: 0, total_time: updatedTime})
                 }))
+                set({activeTime: undefined})
             }
         })
     },
@@ -82,12 +90,17 @@ export const useTimeStore = create<TimeState>((set, get) => ({
         await Promise.all(stops)
         const fresh = await fetchTimes()
         set({times: fresh})
+        set({activeTime: undefined})
         return fresh
     },
 
     updateTime: (data: Time) => {
         timeService.updateTime(data).then(() => {
             set((state) => ({times: new Map(state.times).set(data.key, data)}))
+            const activeTime = get().activeTime
+            if (activeTime && activeTime.id === data.id) {
+                set({activeTime: {...data}})
+            }
         })
     },
 
@@ -98,6 +111,10 @@ export const useTimeStore = create<TimeState>((set, get) => ({
                 next.delete(key)
                 return {times: next}
             })
+            const activeTime = get().activeTime
+            if (activeTime && activeTime.id === id) {
+                set({activeTime: undefined})
+            }
         })
     },
 
@@ -120,6 +137,10 @@ export const useTimeStore = create<TimeState>((set, get) => ({
             })
             return {times: next, dialogIsOpen: false}
         })
+        const activeTime = get().activeTime
+        if (activeTime) {
+            set({activeTime: {...activeTime, running: 0, total_time: 0, current_time: 0}})
+        }
     },
 
     setDialogOpen: (state: boolean) => set({dialogIsOpen: state}),
