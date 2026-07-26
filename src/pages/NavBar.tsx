@@ -1,6 +1,6 @@
-import AddProjectButton from '@/components/Buttons/AddProjectButton.tsx'
-import EditProjectButton from '@/components/Buttons/EditProjectButton.tsx'
-import EndDayButton from '@/components/Buttons/EndDayButton.tsx'
+import AddProjectButton from '@/components/Buttons/AddProjectButton'
+import EditProjectButton from '@/components/Buttons/EditProjectButton'
+import EndDayButton from '@/components/Buttons/EndDayButton'
 
 function NavBar () {
     return (

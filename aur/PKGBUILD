@@ -1,0 +1,30 @@
+# Maintainer: sam <sampyeatt4@proton.me>
+# Repackages the .deb published by the GitHub release workflow. pkgver and both
+# sha256sums are rewritten by .github/workflows/build.yml on release; keep the
+# committed values matching the release named by pkgver.
+pkgname=projecttracker-bin
+_appname=ProjectTracker
+pkgver=0.3.0
+pkgrel=1
+pkgdesc="Project tracker application"
+arch=('x86_64' 'aarch64')
+url="https://github.com/sampyeatt/ProjectTracker"
+license=('MIT')
+depends=('webkit2gtk-4.1' 'libayatana-appindicator' 'librsvg')
+provides=('projecttracker')
+conflicts=('projecttracker')
+options=('!strip')
+install=${pkgname}.install
+source_x86_64=("${pkgname}-${pkgver}-x86_64.deb::${url}/releases/download/app-v${pkgver}/${_appname}_${pkgver}_amd64.deb")
+source_aarch64=("${pkgname}-${pkgver}-aarch64.deb::${url}/releases/download/app-v${pkgver}/${_appname}_${pkgver}_arm64.deb")
+sha256sums_x86_64=('c4decefdc0c392cf08f60a1e708cd1b2b4edab7821b683c2b48216885ff9d9b2')
+sha256sums_aarch64=('1ebaedc7283403bc15b8065bdca261fa935880d4362b837cc2c804fcbdeee8a7')
+
+package() {
+    # makepkg's bsdtar unpacks the .deb into $srcdir, leaving the payload behind
+    # as data.tar.*; the compression Tauri picks has changed between releases.
+    local payload
+    payload=$(find "${srcdir}" -maxdepth 1 -name 'data.tar.*' -print -quit)
+    [[ -n ${payload} ]] || return 1
+    bsdtar -xf "${payload}" -C "${pkgdir}"
+}

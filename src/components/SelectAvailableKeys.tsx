@@ -1,21 +1,25 @@
 import {Dropdown} from 'primereact/dropdown'
-import {availableKeys} from '@/utils/shared.tsx'
-import {Time} from '@/utils/interfaces.tsx'
+import {projectKeys} from '@/utils/shared'
+import {Project} from '@/utils/interfaces'
 import {useMemo} from 'react'
 
-function SelectAvailableKeys ({times, value, onChange, className}: {
-    times: Map<string, Time>,
-    value: string,
-    onChange: (data: string) => void,
+/**
+ * Picks a shortcut key from the ones not already bound. `keepKey` lets an edit
+ * dialog keep offering the row's own current key.
+ */
+function SelectAvailableKeys ({projects, value, onChange, keepKey, className}: {
+    projects: Map<string, Project>
+    value: string
+    onChange: (key: string) => void
+    keepKey?: string
     className?: string
 }) {
-    const keyOptions = useMemo(() => {
-        const options: Array<{ label: string, value: string }> = []
-        availableKeys.forEach((_value, key) => {
-            if (!times.has(key)) options.push({label: key, value: key})
-        })
-        return options
-    }, [times])
+    const keyOptions = useMemo(
+        () => projectKeys
+            .filter((key) => !projects.has(key) || key === keepKey)
+            .map((key) => ({label: key, value: key})),
+        [projects, keepKey]
+    )
 
     return (
         <Dropdown

@@ -7,7 +7,23 @@ on:
       - release
 
 jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+
   publish-tauri:
+    needs: check
     permissions:
       contents: write
     strategy:
@@ -53,12 +69,10 @@ jobs:
           workspaces: './src-tauri -> target'
 
       - name: install frontend dependencies
-        # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
-        run: npm install # change this to npm or pnpm depending on which one you use.
+        run: npm ci
 
-      - name: build frontend
-        run: npm run build
-
+      # The frontend is built by tauri-action via `beforeBuildCommand` in
+      # tauri.conf.json; building it here too would just do the work twice.
       - uses: tauri-apps/tauri-action@v0.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,45 +95,57 @@ jobs:
 
       - name: Get app version
         id: version
-        run: |
-          VERSION=$(python3 -c "import json; print(json.load(open('src-tauri/tauri.conf.json'))['version'])")
-          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+        # package.json is the single source of truth; tauri.conf.json reads its
+        # version from there, so the release tag always matches.
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
-      - name: Download DEB and compute checksum
+      - name: Download release artifacts and compute checksums
         id: checksum
         run: |
           VERSION=${{ steps.version.outputs.VERSION }}
-          DEB="ProjectTracker_${VERSION}_amd64.deb"
-          wget -q "https://github.com/sampyeatt/ProjectTracker/releases/download/app-v${VERSION}/${DEB}" -O "${DEB}"
-          SHA256=$(sha256sum "${DEB}" | cut -d' ' -f1)
-          echo "SHA256=${SHA256}" >> $GITHUB_OUTPUT
-          echo "DEB=${DEB}" >> $GITHUB_OUTPUT
+          BASE="https://github.com/${{ github.repository }}/releases/download/app-v${VERSION}"
+          wget -q "${BASE}/ProjectTracker_${VERSION}_amd64.deb" -O amd64.deb
+          wget -q "${BASE}/ProjectTracker_${VERSION}_arm64.deb" -O arm64.deb
+          echo "SHA256_X86_64=$(sha256sum amd64.deb | cut -d' ' -f1)" >> $GITHUB_OUTPUT
+          echo "SHA256_AARCH64=$(sha256sum arm64.deb | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
-      - name: Generate PKGBUILD
+      - name: Update PKGBUILD
+        # Replaces the whole line rather than matching a placeholder, so this
+        # keeps working no matter what value is currently committed.
         run: |
-          VERSION=${{ steps.version.outputs.VERSION }}
-          SHA256=${{ steps.checksum.outputs.SHA256 }}
-          sed -i "s/^pkgver=.*/pkgver=${VERSION}/" PKGBUILD
-          sed -i "s/sha256sums_x86_64=('SKIP')/sha256sums_x86_64=('${SHA256}')/" PKGBUILD
+          cd aur
+          sed -i "s|^pkgver=.*|pkgver=${{ steps.version.outputs.VERSION }}|" PKGBUILD
+          sed -i "s|^sha256sums_x86_64=.*|sha256sums_x86_64=('${{ steps.checksum.outputs.SHA256_X86_64 }}')|" PKGBUILD
+          sed -i "s|^sha256sums_aarch64=.*|sha256sums_aarch64=('${{ steps.checksum.outputs.SHA256_AARCH64 }}')|" PKGBUILD
 
       - name: Build AUR package
         run: |
           docker run --rm \
-            -v "$PWD:/build" \
+            -v "$PWD/aur:/build" \
             -w /build \
             archlinux:latest \
             bash -c "
-              pacman -Syu --noconfirm &&
-              pacman -S --noconfirm base-devel &&
+              set -e
+              pacman -Syu --noconfirm base-devel &&
               useradd -m builduser &&
               chown -R builduser /build &&
+              su builduser -c 'makepkg --noconfirm --noprogressbar --nodeps --printsrcinfo > .SRCINFO' &&
               su builduser -c 'makepkg --noconfirm --noprogressbar --nodeps'
             "
 
-#      - name: Upload AUR package to release
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#        run: |
-#          VERSION=${{ steps.version.outputs.VERSION }}
-#          PKG=$(ls *.pkg.tar.zst | head -1)
-#          gh release upload "app-v${VERSION}" "${PKG}" --clobber
+      - name: Upload AUR package to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=${{ steps.version.outputs.VERSION }}
+          PKG=$(ls aur/*.pkg.tar.zst | head -1)
+          gh release upload "app-v${VERSION}" "${PKG}" --clobber
+
+      - name: Upload updated PKGBUILD
+        # PKGBUILD and .SRCINFO as published; download these to push to the AUR.
+        uses: actions/upload-artifact@v4
+        with:
+          name: aur-pkgbuild
+          path: |
+            aur/PKGBUILD
+            aur/.SRCINFO

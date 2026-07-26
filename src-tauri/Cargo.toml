@@ -1,8 +1,10 @@
 [package]
 name = "projecttracker"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+# Not the released version: tauri.conf.json takes that from package.json, which
+# is the single source of truth for the bundle, the release tag and the PKGBUILD.
+version = "0.0.0"
+description = "Project tracker application"
+authors = ["sam <sampyeatt4@proton.me>"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

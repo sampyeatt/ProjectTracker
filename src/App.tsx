@@ -1,29 +1,54 @@
-import React, {useEffect} from 'react'
+import {useEffect} from 'react'
 import './App.css'
-import Projects from '@/pages/Projects.tsx'
-import NavBar from '@/pages/NavBar.tsx'
+import Projects from '@/pages/Projects'
+import NavBar from '@/pages/NavBar'
+import ErrorToast from '@/components/ErrorToast'
 import {getCurrentWindow} from '@tauri-apps/api/window'
 import {Button} from 'primereact/button'
 import {useTimeStore} from '@/store/timeStore'
+import {isProjectKey} from '@/utils/shared'
 
 function App () {
-    const loadTimes = useTimeStore((s) => s.loadTimes)
+    const loadProjects = useTimeStore((s) => s.loadProjects)
     const handleKey = useTimeStore((s) => s.handleKey)
+    const stopAll = useTimeStore((s) => s.stopAll)
 
     useEffect(() => {
-        loadTimes()
-    }, [loadTimes])
+        void loadProjects()
+    }, [loadProjects])
 
-    const handleKeyboardEvent = (event: React.KeyboardEvent<HTMLDivElement>) => {
-        handleKey(event.code)
-    }
+    // Listen on the window rather than a focused element: the shortcuts have to
+    // keep working after a dialog closes and drops DOM focus back onto the body.
+    useEffect(() => {
+        const onKeyDown = (event: KeyboardEvent) => {
+            if (!isProjectKey(event.code)) return
+            // F11 and F12 are fullscreen and devtools in the webview.
+            event.preventDefault()
+            handleKey(event.code)
+        }
+        window.addEventListener('keydown', onKeyDown)
+        return () => window.removeEventListener('keydown', onKeyDown)
+    }, [handleKey])
+
+    // Bank the running timer before the window goes away, so closing can't leave
+    // a row marked running with a start time from a previous session.
+    useEffect(() => {
+        const unlisten = getCurrentWindow().onCloseRequested(async (event) => {
+            event.preventDefault()
+            await stopAll()
+            await getCurrentWindow().destroy()
+        })
+        return () => {
+            void unlisten.then((off) => off())
+        }
+    }, [stopAll])
 
     const closeWindow = () => {
-        getCurrentWindow().close()
+        void getCurrentWindow().close()
     }
 
     return (
-        <main className='container' onKeyDown={handleKeyboardEvent} tabIndex={0}>
+        <main className='container'>
             <div className='flex place-content-start'>
                 <Button icon='pi pi-times' severity='danger' aria-label='Close'
                     className='w-13! h-13! bg-red-800! hover:bg-red-700! border-red-800!' onClick={closeWindow}/>
@@ -32,6 +57,7 @@ function App () {
                 <NavBar/>
                 <Projects/>
             </div>
+            <ErrorToast/>
         </main>
     )
 }

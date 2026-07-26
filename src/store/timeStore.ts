@@ -1,156 +1,148 @@
 import {create} from 'zustand'
-import {Time} from '@/utils/interfaces.tsx'
+import {BillableEntry, Project} from '@/utils/interfaces'
 import {TimeService} from '@/services/times.service'
-import {availableKeys} from '@/utils/shared.tsx'
+import {orderIndexForKey} from '@/utils/shared'
 
 const timeService = new TimeService()
 
-async function fetchTimes (): Promise<Map<string, Time>> {
-    const newMap = new Map<string, Time>()
-    const timesFromDB = await timeService.getAllTimes()
-    timesFromDB.forEach((time) => newMap.set(time.key, time))
-    return newMap
+/**
+ * Turn whatever the SQL layer threw into something worth putting in front of a
+ * user. The UNIQUE violation is the one a user can actually cause, by binding
+ * two projects to the same key.
+ */
+function describeError (error: unknown, fallback: string): string {
+    const detail = error instanceof Error ? error.message : String(error)
+    if (detail.includes('UNIQUE constraint failed: times.key')) {
+        return 'That key is already bound to another project.'
+    }
+    return `${fallback}: ${detail}`
 }
 
 interface TimeState {
-    times: Map<string, Time>
+    /** Projects by shortcut key. Always mirrors the last successful DB read. */
+    projects: Map<string, Project>
+    /** True while a modal owns the keyboard, so shortcuts stand down. */
     dialogIsOpen: boolean
-    loadTimes: () => Promise<void>
-    startTime: (data: Time) => void
-    stopTime: (data: Time) => void
-    stopAllTimes: () => Promise<Map<string, Time>>
-    updateTime: (data: Time) => void
-    deleteTime: (id: number, key: string) => void
-    newTime: (clientName: string, key: string) => Promise<boolean>
-    endDay: () => Promise<void>
-    setDialogOpen: (state: boolean) => void
+    /** Message for the toast, or null. */
+    error: string | null
+    loadProjects: () => Promise<void>
+    startProject: (project: Project) => Promise<void>
+    stopProject: (project: Project) => Promise<void>
+    stopAll: () => Promise<void>
+    createProject: (clientName: string, key: string) => Promise<boolean>
+    updateProject: (project: Project) => Promise<void>
+    deleteProject: (id: number) => Promise<void>
+    endDay: (entries: BillableEntry[], endedAt: number) => Promise<void>
+    setDialogOpen: (open: boolean) => void
     handleKey: (code: string) => void
-    activeTime?: Time
+    clearError: () => void
 }
 
-export const useTimeStore = create<TimeState>((set, get) => ({
-    times: new Map<string, Time>(),
-    dialogIsOpen: false,
+/** Shared by React StrictMode's double-invoked mount effect, so it only reads once. */
+let inFlightLoad: Promise<void> | null = null
 
-    loadTimes: async () => {
-        const res = await fetchTimes()
-        set({times: res})
-        res.forEach(t => {
-            if (t.running) {
-                set({activeTime: t})
-            }
-        })
-    },
-
-    startTime: (data: Time) => {
-        const date = Date.now()
-        const value = get().activeTime
-        if (value) {
-            const inactiveTime = value.total_time + (date - value.current_time)
-            timeService.stopTime(inactiveTime, value.id)
-        }
-        timeService.startTime(data.id, 1, date).then((res) => {
-            if (res) {
-                set((state) => {
-                    const next = new Map(state.times)
-                    next.set(data.key, {...data, running: 1, current_time: date})
-                    if (value) {
-                        const inactiveTime = value.total_time + (date - value.current_time)
-                        next.set(value.key, {...value, running: 0, total_time: inactiveTime})
-                    }
-                    return {times: next}
-                })
-                set({activeTime: {...data, running: 1, current_time: date}})
-            }
-        })
-    },
-
-    stopTime: (data: Time) => {
-        const date = Date.now()
-        const updatedTime = data.total_time + (date - data.current_time)
-        timeService.stopTime(updatedTime, data.id).then((res) => {
-            if (res) {
-                set((state) => ({
-                    times: new Map(state.times).set(data.key, {...data, running: 0, total_time: updatedTime})
-                }))
-                set({activeTime: undefined})
-            }
-        })
-    },
-
-    stopAllTimes: async () => {
-        const current = get().times
-        const date = Date.now()
-        const stops: Promise<unknown>[] = []
-        current.forEach((value: Time) => {
-            if (value.running === 1) {
-                stops.push(timeService.stopTime(value.total_time + (date - value.current_time), value.id))
-            }
-        })
-        await Promise.all(stops)
-        const fresh = await fetchTimes()
-        set({times: fresh})
-        set({activeTime: undefined})
-        return fresh
-    },
-
-    updateTime: (data: Time) => {
-        timeService.updateTime(data).then(() => {
-            set((state) => ({times: new Map(state.times).set(data.key, data)}))
-            const activeTime = get().activeTime
-            if (activeTime && activeTime.id === data.id) {
-                set({activeTime: {...data}})
-            }
-        })
-    },
-
-    deleteTime: (id: number, key: string) => {
-        timeService.deleteTime(id).then(() => {
-            set((state) => {
-                const next = new Map(state.times)
-                next.delete(key)
-                return {times: next}
-            })
-            const activeTime = get().activeTime
-            if (activeTime && activeTime.id === id) {
-                set({activeTime: undefined})
-            }
-        })
-    },
-
-    newTime: async (clientName: string, key: string) => {
-        const index = availableKeys.get(key)!.order_index
-        const res = await timeService.newTime(clientName, key, index)
-        if (res) {
-            await get().loadTimes()
-            return true
-        }
-        return false
-    },
-
-    endDay: async () => {
-        await timeService.resetAllTime()
-        set((state) => {
-            const next = new Map<string, Time>()
-            state.times.forEach((value, key) => {
-                next.set(key, {...value, running: 0, total_time: 0, current_time: 0})
-            })
-            return {times: next, dialogIsOpen: false}
-        })
-        const activeTime = get().activeTime
-        if (activeTime) {
-            set({activeTime: {...activeTime, running: 0, total_time: 0, current_time: 0}})
-        }
-    },
-
-    setDialogOpen: (state: boolean) => set({dialogIsOpen: state}),
-
-    handleKey: (code: string) => {
-        const {dialogIsOpen, times, startTime, stopTime} = get()
-        if (dialogIsOpen) return
-        const time = times.get(code)
-        if (!time) return
-        if (time.running === 1) stopTime(time)
-        else startTime(time)
+export const useTimeStore = create<TimeState>((set, get) => {
+    /** Re-read every project from the database, the only writer of `projects`. */
+    const refresh = async (): Promise<void> => {
+        const projects = await timeService.getAllProjects()
+        const next = new Map<string, Project>()
+        projects.forEach((project) => next.set(project.key, project))
+        set({projects: next})
     }
-}))
+
+    /**
+     * Run a write, then re-read. Any failure surfaces as a toast and leaves the
+     * displayed state matching the database rather than an optimistic guess.
+     */
+    const mutate = async (fallback: string, write: () => Promise<void>): Promise<boolean> => {
+        try {
+            await write()
+            await refresh()
+            return true
+        } catch (error) {
+            set({error: describeError(error, fallback)})
+            try {
+                await refresh()
+            } catch {
+                // Already reporting the write failure; a failed re-read adds nothing.
+            }
+            return false
+        }
+    }
+
+    return {
+        projects: new Map<string, Project>(),
+        dialogIsOpen: false,
+        error: null,
+
+        loadProjects: async () => {
+            inFlightLoad ??= (async () => {
+                try {
+                    await refresh()
+                } catch (error) {
+                    set({error: describeError(error, 'Could not load projects')})
+                } finally {
+                    inFlightLoad = null
+                }
+            })()
+            await inFlightLoad
+        },
+
+        startProject: async (project: Project) => {
+            await mutate('Could not start the timer', async () => {
+                await timeService.switchTo(project.id, Date.now())
+            })
+        },
+
+        stopProject: async (project: Project) => {
+            await mutate('Could not stop the timer', async () => {
+                await timeService.stop(project.id, Date.now())
+            })
+        },
+
+        stopAll: async () => {
+            await mutate('Could not stop the timers', async () => {
+                await timeService.stopAll(Date.now())
+            })
+        },
+
+        createProject: async (clientName: string, key: string) => {
+            return await mutate('Could not add the project', async () => {
+                await timeService.createProject(clientName, key, orderIndexForKey(key))
+            })
+        },
+
+        updateProject: async (project: Project) => {
+            await mutate('Could not save the project', async () => {
+                await timeService.updateProject({...project, orderIndex: orderIndexForKey(project.key)})
+            })
+        },
+
+        deleteProject: async (id: number) => {
+            await mutate('Could not delete the project', async () => {
+                await timeService.deleteProject(id)
+            })
+        },
+
+        endDay: async (entries: BillableEntry[], endedAt: number) => {
+            // History first: if the reset then fails the day is still recorded,
+            // which is the recoverable order of the two.
+            await mutate('Could not close out the day', async () => {
+                await timeService.recordEntries(entries, endedAt)
+                await timeService.resetAll()
+            })
+        },
+
+        setDialogOpen: (open: boolean) => set({dialogIsOpen: open}),
+
+        handleKey: (code: string) => {
+            const {dialogIsOpen, projects, startProject, stopProject} = get()
+            if (dialogIsOpen) return
+            const project = projects.get(code)
+            if (!project) return
+            void (project.running ? stopProject(project) : startProject(project))
+        },
+
+        clearError: () => set({error: null})
+    }
+})

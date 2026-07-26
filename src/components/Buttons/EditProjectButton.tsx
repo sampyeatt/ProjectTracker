@@ -1,7 +1,7 @@
 import {useState} from 'react'
 import {Button} from 'primereact/button'
 import {Dialog} from 'primereact/dialog'
-import EditTable from '@/components/EditTable.tsx'
+import EditTable from '@/components/EditTable'
 import {useTimeStore} from '@/store/timeStore'
 
 function EditProjectButton () {

@@ -1,31 +1,43 @@
 import {Button} from 'primereact/button'
-import {Time} from '@/utils/interfaces.tsx'
+import {Project} from '@/utils/interfaces'
 import {useTimeStore} from '@/store/timeStore'
+import {elapsedMs, formatHours, msPerHour} from '@/utils/billing'
 
-function ProjectButton ({project}: { project: Time }) {
-    const startTime = useTimeStore((s) => s.startTime)
-    const stopTime = useTimeStore((s) => s.stopTime)
+/**
+ * One slot in the project grid. An unbound slot renders as a disabled button
+ * showing the key it's waiting to be assigned.
+ */
+function ProjectButton ({shortcutKey, project, now}: {
+    shortcutKey: string
+    project?: Project
+    now: number
+}) {
+    const startProject = useTimeStore((s) => s.startProject)
+    const stopProject = useTimeStore((s) => s.stopProject)
 
-    const disabled = project.active === 0
-    const running = project.running === 1
-
-    const label = project.active
-        ? `${project.client_name}\n${(project.total_time / (1000 * 60 * 60)).toFixed(2)} hours`
-        : project.key
-
-    const handleClick = () => {
-        if (!project.running) startTime(project)
-        else stopTime(project)
+    if (project === undefined) {
+        return (
+            <Button className='w-33! h-16.5! bg-purple-950! border-purple-950! whitespace-pre-line justify-center text-center'
+                outlined disabled>
+                {shortcutKey}
+            </Button>
+        )
     }
 
+    const running = project.running
+    const hours = elapsedMs(project, now) / msPerHour
     const stateClasses = running
         ? 'bg-purple-800! hover:bg-purple-700! border-purple-800!'
         : 'bg-purple-950! hover:bg-purple-900! border-purple-950!'
 
+    const handleClick = () => {
+        void (running ? stopProject(project) : startProject(project))
+    }
+
     return (
         <Button className={`w-33! h-16.5! ${stateClasses} whitespace-pre-line justify-center text-center`}
-                outlined={!running} disabled={disabled} onClick={handleClick}>
-            {label}
+            outlined={!running} onClick={handleClick}>
+            {`${project.clientName}\n${formatHours(hours)} hours`}
         </Button>
     )
 }

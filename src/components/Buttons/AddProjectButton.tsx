@@ -3,7 +3,7 @@ import {useForm, Controller} from 'react-hook-form'
 import {Button} from 'primereact/button'
 import {Dialog} from 'primereact/dialog'
 import {InputText} from 'primereact/inputtext'
-import SelectAvailableKeys from '@/components/SelectAvailableKeys.tsx'
+import SelectAvailableKeys from '@/components/SelectAvailableKeys'
 import {useTimeStore} from '@/store/timeStore'
 
 interface AddProjectForm {
@@ -12,8 +12,8 @@ interface AddProjectForm {
 }
 
 function AddProjectButton () {
-    const times = useTimeStore((s) => s.times)
-    const newTime = useTimeStore((s) => s.newTime)
+    const projects = useTimeStore((s) => s.projects)
+    const createProject = useTimeStore((s) => s.createProject)
     const setDialogOpen = useTimeStore((s) => s.setDialogOpen)
     const [visible, setVisible] = useState(false)
 
@@ -32,16 +32,16 @@ function AddProjectButton () {
         setDialogOpen(false)
     }
 
+    // On failure the store has already raised a toast; leave the dialog open so
+    // the entered details aren't lost.
     const onSubmit = async (data: AddProjectForm) => {
-        const ok = await newTime(data.clientName, data.selectedKey)
-        if (!ok) alert('Error adding time')
-        closeDialog()
+        if (await createProject(data.clientName, data.selectedKey)) closeDialog()
     }
 
     const footer = (
         <div className='flex justify-end gap-2'>
             <Button label='Cancel' className={'bg-red-800!'} outlined onClick={closeDialog}/>
-            <Button label='Save' className={'bg-emerald-900!'} onClick={handleSubmit(onSubmit)}/>
+            <Button label='Save' className={'bg-emerald-900!'} onClick={() => void handleSubmit(onSubmit)()}/>
         </div>
     )
 
@@ -66,7 +66,7 @@ function AddProjectButton () {
                         control={control}
                         rules={{required: 'A key is required'}}
                         render={({field}) => (
-                            <SelectAvailableKeys times={times} value={field.value}
+                            <SelectAvailableKeys projects={projects} value={field.value}
                                 onChange={field.onChange}
                                 className={errors.selectedKey ? 'p-invalid' : ''}/>
                         )}

@@ -12,6 +12,14 @@ dist
 dist-ssr
 *.local
 
+# makepkg work directories (see aur/PKGBUILD)
+aur/src/
+aur/pkg/
+*.pkg.tar.zst
+*.deb
+*.rpm
+*.AppImage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

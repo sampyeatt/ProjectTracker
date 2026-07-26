@@ -11,6 +11,7 @@
     "sql:allow-execute",
     "sql:allow-select",
     "sql:allow-close",
-    "core:window:allow-close"
+    "core:window:allow-close",
+    "core:window:allow-destroy"
   ]
 }
