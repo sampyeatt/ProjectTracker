@@ -2,7 +2,7 @@
 name = "projecttracker"
 # Not the released version: tauri.conf.json takes that from package.json, which
 # is the single source of truth for the bundle, the release tag and the PKGBUILD.
-version = "0.0.0"
+version = "1.0.0"
 description = "Project tracker application"
 authors = ["sam <sampyeatt4@proton.me>"]
 edition = "2021"
