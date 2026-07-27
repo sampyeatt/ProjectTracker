@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from '@tailwindcss/vite'
+import { fileURLToPath } from 'node:url'
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -30,7 +31,18 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
-    resolve: {
-      tsconfigPaths: true
-    }
+  build: {
+    // The only browser this ever runs in is the bundled webview, so there is no
+    // reason to downlevel anything. Keeps the output smaller and skips helper
+    // shims for syntax the webview already supports.
+    target: 'esnext',
+  },
+  resolve: {
+    // Mirrors `paths` in tsconfig.json. This used to read `tsconfigPaths: true`,
+    // which is not a Vite option and did nothing — `@/` resolved only because
+    // Vite happens to fall back to reading tsconfig paths itself.
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+    },
+  },
 }));

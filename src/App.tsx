@@ -4,7 +4,7 @@ import Projects from '@/pages/Projects'
 import NavBar from '@/pages/NavBar'
 import ErrorToast from '@/components/ErrorToast'
 import {getCurrentWindow} from '@tauri-apps/api/window'
-import {Button} from 'primereact/button'
+import Button from '@/components/Button'
 import {useTimeStore} from '@/store/timeStore'
 import {isProjectKey} from '@/utils/shared'
 
@@ -50,8 +50,8 @@ function App () {
     return (
         <main className='container'>
             <div className='flex place-content-start'>
-                <Button icon='pi pi-times' severity='danger' aria-label='Close'
-                    className='w-13! h-13! bg-red-800! hover:bg-red-700! border-red-800!' onClick={closeWindow}/>
+                <Button icon='times' iconOnly aria-label='Close' onClick={closeWindow}
+                    className='h-13 w-13 border-red-800 bg-red-800 text-xl hover:bg-red-700'/>
             </div>
             <div className='flex flex-col gap-5'>
                 <NavBar/>

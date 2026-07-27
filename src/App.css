@@ -1,7 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  /* System fonts only. The old stack led with Inter, which PrimeReact's theme
+     shipped as two variable woff2 files totalling 726KB — for a window that
+     displays a dozen short labels. */
+  font-family: system-ui, sans-serif;
   font-size: 16px;
   line-height: 24px;
   font-weight: 400;
@@ -26,43 +29,4 @@
   flex-direction: column;
   justify-content: center;
   text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #ffffff;
-  background-color: #0f0f0f98;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-  outline: none;
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-
-button:active {
-  border-color: #396cd8;
-  background-color: #0f0f0f69;
-}
-
-/* PrimeReact's theme.css lives in @layer primereact, so the unlayered button
-   rules above outrank it. On the dialog's icon buttons that padding fills the
-   whole 2rem box and shrinks the flex-item X icon to zero width, so restore
-   what the theme intended. */
-.p-dialog-header-icon {
-  padding: 0;
-  background-color: transparent;
-  box-shadow: none;
-  border-radius: 50%;
 }

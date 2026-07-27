@@ -1,10 +1,6 @@
 import {useState} from 'react'
-import {Button} from 'primereact/button'
-import {Dialog} from 'primereact/dialog'
-import {DataTable} from 'primereact/datatable'
-import {Column} from 'primereact/column'
-import {ColumnGroup} from 'primereact/columngroup'
-import {Row} from 'primereact/row'
+import Button from '@/components/Button'
+import Modal from '@/components/Modal'
 import {useTimeStore} from '@/store/timeStore'
 import {BillableEntry} from '@/utils/interfaces'
 import {billableEntries, formatHours, totalHours} from '@/utils/billing'
@@ -42,34 +38,49 @@ function EndDayButton () {
         closeDialog()
     }
 
-    const footerGroup = (
-        <ColumnGroup>
-            <Row>
-                <Column footer='TOTAL' footerStyle={{fontWeight: 'bold'}}/>
-                <Column footer={formatHours(totalHours(snapshot?.entries ?? []))} footerStyle={{fontWeight: 'bold'}}/>
-            </Row>
-        </ColumnGroup>
-    )
+    const entries = snapshot?.entries ?? []
 
     const footer = (
         <div className='flex justify-end gap-2'>
-            <Button label='Cancel' className={'bg-red-800!'} outlined onClick={closeDialog}/>
-            <Button label='Done' className={'bg-emerald-900!'} onClick={() => void handleDone()}/>
+            <Button label='Cancel' onClick={closeDialog}
+                className='border-red-800 bg-transparent hover:bg-red-800/30'/>
+            <Button label='Done' onClick={() => void handleDone()}
+                className='border-emerald-900 bg-emerald-900 hover:bg-emerald-800'/>
         </div>
     )
 
     return (
         <div className='flex justify-center p-2'>
-            <Button label='End Day' icon='pi pi-calendar'
-                className='w-33! h-12! bg-emerald-900! hover:bg-emerald-800! border-emerald-900! text-white!' onClick={openDialog}/>
-            <Dialog header='End Day' visible={snapshot !== null} onHide={closeDialog}
-                footer={footer} style={{width: '28rem'}}>
-                <DataTable value={snapshot?.entries ?? []} size='small' footerColumnGroup={footerGroup}
-                    emptyMessage='Nothing billable today.'>
-                    <Column field='clientName' header='Client'/>
-                    <Column header='Total Hours' body={(entry: BillableEntry) => formatHours(entry.hours)}/>
-                </DataTable>
-            </Dialog>
+            <Button label='End Day' icon='calendar' onClick={openDialog}
+                className='h-12 w-33 border-emerald-900 bg-emerald-900 hover:bg-emerald-800'/>
+            <Modal header='End Day' visible={snapshot !== null} onHide={closeDialog} footer={footer} widthRem={28}>
+                {/* At most sixteen read-only rows, so a plain table. A DataTable
+                    would have cost 316KB of JavaScript to render this. */}
+                <table className='w-full text-left text-sm'>
+                    <thead>
+                        <tr className='border-b border-white/10'>
+                            <th className='p-2'>Client</th>
+                            <th className='p-2 text-right'>Total Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {entries.length === 0
+                            ? <tr><td colSpan={2} className='p-4 text-center opacity-70'>Nothing billable today.</td></tr>
+                            : entries.map((entry) => (
+                                <tr key={entry.key} className='border-b border-white/10'>
+                                    <td className='p-2'>{entry.clientName}</td>
+                                    <td className='p-2 text-right'>{formatHours(entry.hours)}</td>
+                                </tr>
+                            ))}
+                    </tbody>
+                    <tfoot>
+                        <tr className='font-bold'>
+                            <td className='p-2'>TOTAL</td>
+                            <td className='p-2 text-right'>{formatHours(totalHours(entries))}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </Modal>
         </div>
     )
 }

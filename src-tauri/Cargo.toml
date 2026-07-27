@@ -16,6 +16,20 @@ edition = "2021"
 name = "projecttracker_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+# Defaults tuned for a small desktop binary rather than for compile speed. The
+# untuned build was 18MB, of which 2MB was unwind tables and the rest unstripped
+# symbols and duplicated code across 16 codegen units.
+#
+# `panic = "abort"` is the one line here that changes behaviour: a panic now
+# terminates the process instead of unwinding. Nothing in this app catches a
+# panic, but drop this line if that ever changes.
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+panic = "abort"
+strip = true
+
 [build-dependencies]
 tauri-build = { version = "^2", features = [] }
 
