@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "test": "vitest run",
-    "tauri": "NO_STRIP=1 tauri"
+    "tauri": "tauri"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
