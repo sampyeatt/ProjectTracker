@@ -48,7 +48,7 @@ function App () {
     }
 
     return (
-        <main className='container'>
+        <main className='justify-center m-3'>
             <div className='flex place-content-start'>
                 <Button icon='times' iconOnly aria-label='Close' onClick={closeWindow}
                     className='h-13 w-13 border-red-800 bg-red-800 text-xl hover:bg-red-700'/>
