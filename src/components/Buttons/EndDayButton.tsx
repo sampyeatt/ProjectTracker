@@ -17,6 +17,9 @@ function EndDayButton () {
     const setDialogOpen = useTimeStore((s) => s.setDialogOpen)
 
     const [snapshot, setSnapshot] = useState<DaySnapshot | null>(null)
+    // Keys the user struck out: shown crossed off, left out of the total, and
+    // never recorded.
+    const [excluded, setExcluded] = useState<Set<string>>(new Set())
 
     // Opening the dialog only reads: cancelling has to leave a running timer
     // running. The snapshot is frozen here so what gets recorded on Done is
@@ -24,21 +27,32 @@ function EndDayButton () {
     const openDialog = () => {
         const endedAt = Date.now()
         setSnapshot({entries: billableEntries(projects.values(), endedAt), endedAt})
+        setExcluded(new Set())
         setDialogOpen(true)
     }
 
     const closeDialog = () => {
         setSnapshot(null)
+        setExcluded(new Set())
         setDialogOpen(false)
     }
 
-    const handleDone = async () => {
-        if (snapshot === null) return
-        await endDay(snapshot.entries, snapshot.endedAt)
-        closeDialog()
+    const toggleEntry = (key: string) => {
+        setExcluded((previous) => {
+            const next = new Set(previous)
+            if (!next.delete(key)) next.add(key)
+            return next
+        })
     }
 
     const entries = snapshot?.entries ?? []
+    const kept = entries.filter((entry) => !excluded.has(entry.key))
+
+    const handleDone = async () => {
+        if (snapshot === null) return
+        await endDay(kept, snapshot.endedAt)
+        closeDialog()
+    }
 
     const footer = (
         <div className='flex justify-end gap-2'>
@@ -67,7 +81,9 @@ function EndDayButton () {
                         {entries.length === 0
                             ? <tr><td colSpan={2} className='p-4 text-center opacity-70'>Nothing billable today.</td></tr>
                             : entries.map((entry) => (
-                                <tr key={entry.key} className='border-b border-white/10'>
+                                <tr key={entry.key} onClick={() => toggleEntry(entry.key)}
+                                    className={`cursor-pointer border-b border-white/10 hover:bg-white/5 ${
+                                        excluded.has(entry.key) ? 'line-through opacity-40' : ''}`}>
                                     <td className='p-2'>{entry.clientName}</td>
                                     <td className='p-2 text-right'>{formatHours(entry.hours)}</td>
                                 </tr>
@@ -76,7 +92,7 @@ function EndDayButton () {
                     <tfoot>
                         <tr className='font-bold'>
                             <td className='p-2'>TOTAL</td>
-                            <td className='p-2 text-right'>{formatHours(totalHours(entries))}</td>
+                            <td className='p-2 text-right'>{formatHours(totalHours(kept))}</td>
                         </tr>
                     </tfoot>
                 </table>
