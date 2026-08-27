@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "test": "vitest run",
-    "tauri": "NO_STRIP=1 tauri"
+    "tauri": "cross-env NO_STRIP=1 tauri"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",
@@ -27,6 +27,7 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "cross-env": "^10.1.0",
     "eslint": "^9.39.4",
     "eslint-config-love": "^154.0.0",
     "eslint-plugin-jsdoc": "^63.0.10",
